@@ -1,58 +1,79 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Télécharger LibertyVue Player</title>
+<title>Download LibertyVue Player</title>
 <style>
-  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; }
+  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; --border: #293443; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
-  .badge { background: var(--gold); color: #191508; font-weight: 900; font-size: 28px; border-radius: 16px; padding: 12px 20px; }
-  h1 { font-size: 32px; margin: 14px 0 2px; }
-  .sub { color: var(--gold); letter-spacing: 5px; font-size: 13px; margin-bottom: 24px; }
-  .card { background: var(--panel); border-radius: 16px; padding: 24px; max-width: 560px; width: 100%; margin-bottom: 16px; border: 1px solid #293443; }
-  .btn { display: block; background: var(--gold); color: #191508; font-weight: 800; font-size: 18px; text-align: center; border-radius: 12px; padding: 16px; text-decoration: none; margin: 12px 0; }
-  .meta { color: var(--muted); font-size: 14px; text-align: center; }
-  h2 { font-size: 18px; margin-bottom: 12px; color: var(--gold); }
-  ol { margin-left: 20px; line-height: 1.9; font-size: 15px; }
-  code { background: #080D15; padding: 2px 8px; border-radius: 6px; font-size: 13px; word-break: break-all; }
+  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; padding: 32px 16px; max-width: 720px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .badge { background: var(--gold); color: #191508; font-weight: 900; font-size: 22px; border-radius: 12px; padding: 8px 14px; }
+  .brand b { font-size: 22px; } .brand span { color: var(--gold); font-size: 11px; letter-spacing: 4px; display: block; }
+  h1 { font-size: 26px; margin: 18px 0 6px; }
+  .lead { color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
+  .card h2 { font-size: 18px; margin-bottom: 4px; }
+  .ver { display: inline-block; background: #1B293B; color: var(--gold); font-size: 12px; border-radius: 20px; padding: 3px 12px; margin: 6px 0 10px; }
+  .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .card ul { margin: 8px 0 8px 20px; }
+  .btn { display: block; background: var(--gold); color: #191508; font-weight: 800; font-size: 17px; text-align: center; border-radius: 12px; padding: 15px; text-decoration: none; margin: 14px 0 6px; }
+  .meta { color: var(--muted); font-size: 13px; text-align: center; }
+  ol.steps { margin: 10px 0 0 20px; line-height: 2; font-size: 15px; }
+  code { background: #080D15; padding: 2px 8px; border-radius: 6px; font-size: 12px; word-break: break-all; }
   .ar { direction: rtl; text-align: right; }
-  footer { color: var(--muted); font-size: 12px; margin-top: 24px; text-align: center; }
+  footer { color: var(--muted); font-size: 12px; margin: 24px 0; text-align: center; line-height: 1.8; }
+  a { color: var(--gold); }
 </style>
 </head>
 <body>
-  <div class="badge">LV</div>
-  <h1>LibertyVue</h1>
-  <div class="sub">PLAYER</div>
+  <div class="brand"><div class="badge">LV</div><div><b>LibertyVue</b><span>PLAYER</span></div></div>
+  <h1>Downloads</h1>
+  <p class="lead">Download LibertyVue Player for Android TV, Google TV and compatible Fire TV devices. Live TV, films, series and radio, with your own M3U or Xtream connection. 7-day free trial, no card required.</p>
 
   <div class="card">
-    <h2>Télécharger pour Android TV / Fire TV / Téléphone</h2>
-    <!-- VERSION: update name + link on each release -->
-    <a class="btn" href="https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-wd-debug.apk">Télécharger l'APK (v0.16.0)</a>
-    <div class="meta">~21 Mo · Android 6+ · M3U / Xtream · Essai gratuit 7 jours</div>
+    <!-- VERSION: update badge, button link, size on each release -->
+    <h2>Android TV</h2>
+    <span class="ver">v0.16.0 · Beta</span>
+    <p>Google TV, Android TV boxes and compatible televisions.</p>
+    <ul><li>Live, films, series, radio with French / English / Arabic interface</li><li>Seven-day trial · M3U/M3U8 and Xtream Codes</li></ul>
+    <a class="btn" href="https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-wd-debug.apk">Download APK</a>
+    <div class="meta">v0.16.0 · ~21 MB · Android 6+</div>
   </div>
 
   <div class="card">
-    <h2>Installer avec Downloader</h2>
-    <ol>
-      <li>Ouvrez <b>Downloader</b> sur la TV / le Fire Stick</li>
-      <li>Entrez l'adresse exacte :
-        <br><code>https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-wd-debug.apk</code></li>
-      <li>Cliquez <b>Go</b>, puis <b>Installer</b></li>
-      <li>Autorisez les sources inconnues si demandé</li>
+    <h2>Amazon Fire TV</h2>
+    <span class="ver">v0.16.0 · Beta</span>
+    <p>Compatible Fire TV devices running Android-based Fire OS. Same build as Android TV.</p>
+    <a class="btn" href="https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-wd-debug.apk">Download APK</a>
+    <div class="meta">v0.16.0 · ~21 MB · Fire OS</div>
+  </div>
+
+  <div class="card">
+    <h2>Install with Downloader</h2>
+    <ol class="steps">
+      <li>Open <b>Downloader</b> on your Android TV or Fire TV</li>
+      <li>Enter the exact address:<br><code>https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-wd-debug.apk</code></li>
+      <li>Select <b>Go</b>, then <b>Install</b></li>
+      <li>Allow unknown sources if asked, then return to the installer</li>
     </ol>
   </div>
 
+  <div class="card">
+    <h2>Updating</h2>
+    <p>Already using LibertyVue? Install the new file to update. Saved connections stay in place on official signed builds. v0.16 loads live channels first, then films and series on demand; error messages follow your language (French / English / Arabic).</p>
+  </div>
+
   <div class="card ar">
-    <h2>تحميل للتلفاز والأندرويد</h2>
-    <ol>
+    <h2>التثبيت بـ Downloader</h2>
+    <ol class="steps">
       <li>افتح تطبيق <b>Downloader</b></li>
-      <li>أدخل الرابط أعلاه كاملاً ثم Go</li>
+      <li>أدخل رابط التحميل أعلاه كاملاً ثم Go</li>
       <li>ثبّت التطبيق واسمح بالمصادر غير المعروفة</li>
     </ol>
   </div>
 
-  <footer>LibertyVue Player · lecteur seul, sans chaînes incluses<br>© 2026</footer>
+  <footer>No channels or playlists are included.<br>© 2026 LibertyVue Player · <a href="https://www.libertyvueplayer.online/">Main website</a></footer>
 </body>
 </html>
