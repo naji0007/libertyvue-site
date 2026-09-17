@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup guides — LibertyVue Player</title>
+<style>
+  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; --border: #293443; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; padding: 12px 0 20px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 8px; }
+  nav a:hover, nav a.on { color: var(--gold); background: var(--panel); }
+  nav .logo { color: var(--text); font-weight: 900; margin-right: auto; font-size: 17px; }
+  nav .logo span { color: var(--gold); font-size: 10px; letter-spacing: 3px; display: block; }
+  h1 { font-size: 26px; margin: 10px 0 6px; }
+  .lead { color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
+  .card h2 { font-size: 18px; margin-bottom: 8px; color: var(--gold); }
+  .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.8; }
+  .card ol, .card ul { margin: 8px 0 0 20px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 28px; text-align: center; }
+  footer a { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><div class="logo">LibertyVue<span>PLAYER</span></div><a href="index.html">Home</a><a href="downloads.html">Downloads</a><a class="on" href="guides.html">Guides</a><a href="activate.html">Activate</a><a href="support.html">Support</a></nav>
+  <h1>Setup guides</h1>
+  <p class="lead">Step-by-step help for installing the app, choosing M3U or Xtream Codes, and connecting an authorised playlist.</p>
+
+  <div class="card"><h2>Android TV / Google TV</h2><ol>
+    <li>Install the APK from the <a href="downloads.html" style="color:var(--gold)">download page</a> (or via Downloader).</li>
+    <li>Open the app, tap <b>+</b>, choose <b>M3U</b> or <b>Xtream Codes</b>.</li>
+    <li>Enter the details from your provider and save. Your library appears after refresh.</li>
+  </ol></div>
+
+  <div class="card"><h2>Amazon Fire TV</h2><ol>
+    <li>Install <b>Downloader</b> from the Amazon Appstore.</li>
+    <li>Enter the download link, install, allow unknown sources.</li>
+    <li>Add your playlist as above. Use the Fire TV remote: arrows + OK.</li>
+  </ol></div>
+
+  <div class="card"><h2>M3U or Xtream Codes?</h2><ul>
+    <li><b>M3U / M3U8</b> — a single playlist link from your provider. Simplest option.</li>
+    <li><b>Xtream Codes</b> — server URL + username + password. Faster browsing, EPG guide included.</li>
+  </ul><p style="margin-top:8px">Only use playlists you own or are authorised to watch.</p></div>
+
+  <div class="card"><h2>While watching</h2><ul>
+    <li><b>CH + / −</b> or up/down arrows: zap channels without leaving playback.</li>
+    <li><b>OK</b>: channel list with categories, preview and EPG.</li>
+    <li><b>Back</b>: return to the library. The speaker button opens another player (VLC) for special codecs.</li>
+  </ul></div>
+
+  <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
+</div>
+</body>
+</html>

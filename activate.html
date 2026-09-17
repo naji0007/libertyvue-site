@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activate a device — LibertyVue Player</title>
+<style>
+  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; --border: #293443; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; padding: 12px 0 20px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 8px; }
+  nav a:hover, nav a.on { color: var(--gold); background: var(--panel); }
+  nav .logo { color: var(--text); font-weight: 900; margin-right: auto; font-size: 17px; }
+  nav .logo span { color: var(--gold); font-size: 10px; letter-spacing: 3px; display: block; }
+  h1 { font-size: 26px; margin: 10px 0 6px; }
+  .lead { color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
+  .card h2 { font-size: 18px; margin-bottom: 8px; color: var(--gold); }
+  .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.8; }
+  .card ol, .card ul { margin: 8px 0 0 20px; }
+  .price { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .plan { flex: 1; min-width: 150px; background: #080D15; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .plan b { font-size: 22px; color: var(--gold); display: block; margin: 6px 0; }
+  .plan span { font-size: 13px; color: var(--muted); }
+  .btn { display: block; background: var(--gold); color: #191508; font-weight: 800; font-size: 17px; text-align: center; border-radius: 12px; padding: 15px; text-decoration: none; margin: 14px 0 6px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 28px; text-align: center; }
+  footer a { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><div class="logo">LibertyVue<span>PLAYER</span></div><a href="index.html">Home</a><a href="downloads.html">Downloads</a><a href="guides.html">Guides</a><a class="on" href="activate.html">Activate</a><a href="support.html">Support</a></nav>
+  <h1>Activate a device</h1>
+  <p class="lead">Every new device receives a 7-day free trial automatically — no card required. When it ends, choose the licence that suits you.</p>
+
+  <div class="card"><h2>How activation works</h2><ol>
+    <li>Open LibertyVue Player on the TV — note the <b>Device ID</b> at the bottom of the screen.</li>
+    <li>Contact us with the Device ID and the licence you want.</li>
+    <li>We activate it — refresh the app and the licence appears (annual shows its expiry date).</li>
+  </ol></div>
+
+  <div class="card"><h2>Licences — one per device</h2>
+    <div class="price">
+      <div class="plan">Trial<span>7 days</span><b>Free</b><span>automatic</span></div>
+      <div class="plan">Annual<span>12 months · updates</span><b>€5</b><span>per device</span></div>
+      <div class="plan">Lifetime<span>one payment · updates</span><b>€10</b><span>per device</span></div>
+    </div>
+    <!-- PAYPAL: replace # with your PayPal payment link when ready -->
+    <a class="btn" href="#">Pay with PayPal (link coming soon)</a>
+  </div>
+
+  <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
+</div>
+</body>
+</html>
