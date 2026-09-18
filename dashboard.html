@@ -77,12 +77,12 @@
         <div><label>Name</label><input id="pname" placeholder="My playlist"></div>
         <div><label>Type</label><select id="ptype"><option value="M3U">M3U / M3U8</option><option value="XTREAM">Xtream</option></select></div>
       </div>
-      <label>URL</label><input id="purl" placeholder="https://…">
-      <div class="grid2">
-        <div><label>Username (Xtream)</label><input id="puser"></div>
-        <div><label>Password (Xtream)</label><input id="ppass" type="password"></div>
+      <label id="lurl">M3U / M3U8 URL</label><input id="purl" placeholder="https://…/playlist.m3u">
+      <div id="xfields" class="grid2">
+        <div><label>Username</label><input id="puser" placeholder="Identifiant"></div>
+        <div><label>Password</label><input id="ppass" type="password" placeholder="••••••••"></div>
       </div>
-      <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
+      <label id="lepg">EPG / XMLTV URL (optional — M3U only)</label><input id="pepg" placeholder="https://…/guide.xml">
       <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
       <div class="msg" id="msgP"></div>
     </div></div>
@@ -239,19 +239,32 @@ async function loadPlaylists() {
   });
 }
 document.getElementById('pdev').addEventListener('change', loadPlaylists);
+function updateTypeUI() {
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
+  document.getElementById('lurl').textContent = isXt ? 'Server URL (Xtream)' : 'M3U / M3U8 URL';
+  document.getElementById('purl').placeholder = isXt ? 'https://server.example:8080' : 'https://…/playlist.m3u';
+  document.getElementById('xfields').style.display = isXt ? '' : 'none';
+  document.getElementById('lepg').style.display = isXt ? 'none' : '';
+  document.getElementById('pepg').style.display = isXt ? 'none' : '';
+  if (isXt) { document.getElementById('pepg').value = ''; }
+}
+document.getElementById('ptype').addEventListener('change', updateTypeUI);
+updateTypeUI();
 async function addPlaylist() {
   const id = document.getElementById('pdev').value;
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
   const body = {
     device_id: id,
     name: document.getElementById('pname').value.trim() || 'Playlist',
     type: document.getElementById('ptype').value,
     url: document.getElementById('purl').value.trim(),
-    username: document.getElementById('puser').value.trim(),
-    password: document.getElementById('ppass').value,
-    origin: 'REMOTE', epg_url: document.getElementById('pepg').value.trim()
+    username: isXt ? document.getElementById('puser').value.trim() : '',
+    password: isXt ? document.getElementById('ppass').value : '',
+    origin: 'REMOTE', epg_url: isXt ? '' : document.getElementById('pepg').value.trim()
   };
   if (!id) return show('msgP', false, 'Choose a device first.');
   if (!body.url) return show('msgP', false, 'Enter the URL.');
+  if (isXt && (!body.username || !body.password)) return show('msgP', false, 'Xtream needs username + password.');
   const r = await sb.from('playlists').insert(body);
   if (r.error) return show('msgP', false, r.error.message);
   show('msgP', true, 'Saved. Press Sync on the TV.');
