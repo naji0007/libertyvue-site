@@ -57,6 +57,10 @@
 
     <div class="card"><h3>Balance</h3><div style="display:flex;gap:12px;align-items:center"><span id="balance" class="pill" style="font-size:16px;padding:8px 16px">… €</span><span style="color:var(--muted);font-size:13px">Contact admin to recharge.</span></div><div style="max-height:120px;overflow:auto;margin-top:10px"><table style="font-size:12px"><tbody id="logs"></tbody></table></div></div>
 
+    <div class="card"><h3>Claim a device</h3><p style="color:var(--muted);font-size:13px">Enter the Device ID/Key the customer sent you. The device must have opened the app once (Sync).</p>
+      <div class="grid2"><div><label>Device ID</label><input id="claimId" placeholder="LV-XXXX-XXXX"></div><div><label>Device Key</label><input id="claimKey" placeholder="XXXX-XXXX"></div></div>
+      <button class="btn gold" style="margin-top:12px" onclick="claimDevice()">Claim device</button><div class="msg" id="msgClaim"></div></div>
+
     <div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
       <thead><tr><th>Device</th><th>Licence</th><th>Expires</th><th>Activate</th></tr></thead>
       <tbody id="devices"></tbody>
@@ -122,6 +126,25 @@ async function loadBalance() {
     tr.innerHTML = '<td>' + (x.amount > 0 ? '+' : '') + x.amount + '€</td><td>' + esc(x.reason || '') + '</td><td style="color:var(--muted)">' + new Date(x.created_at).toLocaleDateString('fr-FR') + '</td>';
     tb.appendChild(tr);
   });
+}
+async function claimDevice() {
+  const id = document.getElementById('claimId').value.trim();
+  const key = document.getElementById('claimKey').value.trim();
+  if (!id || !key) return show('msgClaim', false, 'Enter Device ID and Key.');
+  const d = await sb.from('devices').select('device_id,reseller_id,device_key').eq('device_id', id).maybeSingle();
+  if (d.error) return show('msgClaim', false, d.error.message);
+  if (!d.data) return show('msgClaim', false, 'Device not found. Ask customer to open app and Sync first.');
+  if (d.data.device_key !== key) return show('msgClaim', false, 'Wrong Device Key.');
+  if (d.data.reseller_id) {
+    const s = await sb.auth.getSession();
+    if (d.data.reseller_id === s.data.session.user.id) return show('msgClaim', true, 'Already yours.');
+    return show('msgClaim', false, 'Device already assigned to another reseller.');
+  }
+  const s = await sb.auth.getSession();
+  const upd = await sb.from('devices').update({ reseller_id: s.data.session.user.id }).eq('device_id', id);
+  if (upd.error) return show('msgClaim', false, upd.error.message);
+  show('msgClaim', true, 'Device claimed! It now appears in your list.');
+  loadDevices(); loadBalance();
 }
 async function init() {
   if (!sb) {
