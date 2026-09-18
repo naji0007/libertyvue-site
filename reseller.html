@@ -53,10 +53,12 @@
   <div id="app" style="display:none">
     <div class="eyebrow">Reseller space</div>
     <h1 class="hero">My devices.</h1>
-    <p class="sub">Add playlists to your customers' devices. Licence changes are done by the admin.</p>
+    <p class="sub">Add playlists and activate licences for your customers. Annual = 5€, Lifetime = 10€.</p>
+
+    <div class="card"><h3>Balance</h3><div style="display:flex;gap:12px;align-items:center"><span id="balance" class="pill" style="font-size:16px;padding:8px 16px">… €</span><span style="color:var(--muted);font-size:13px">Contact admin to recharge.</span></div><div style="max-height:120px;overflow:auto;margin-top:10px"><table style="font-size:12px"><tbody id="logs"></tbody></table></div></div>
 
     <div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
-      <thead><tr><th>Device</th><th>Licence</th><th>Expires</th></tr></thead>
+      <thead><tr><th>Device</th><th>Licence</th><th>Expires</th><th>Activate</th></tr></thead>
       <tbody id="devices"></tbody>
     </table></div><div class="msg" id="msgD"></div></div>
 
@@ -70,11 +72,12 @@
         <div><label>Name</label><input id="pname" placeholder="My playlist"></div>
         <div><label>Type</label><select id="ptype"><option value="M3U">M3U / M3U8</option><option value="XTREAM">Xtream</option></select></div>
       </div>
-      <label>URL</label><input id="purl" placeholder="https://…">
-      <div class="grid2">
-        <div><label>Username (Xtream)</label><input id="puser"></div>
-        <div><label>Password (Xtream)</label><input id="ppass" type="password"></div>
+      <label id="lurl">M3U / M3U8 URL</label><input id="purl" placeholder="https://…/playlist.m3u">
+      <div id="xfields" class="grid2">
+        <div><label>Username</label><input id="puser" placeholder="Identifiant"></div>
+        <div><label>Password</label><input id="ppass" type="password" placeholder="••••••••"></div>
       </div>
+      <label id="lepg">EPG / XMLTV URL (optional — M3U only)</label><input id="pepg" placeholder="https://…/guide.xml">
       <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
       <div class="msg" id="msgP"></div>
     </div>
@@ -106,6 +109,20 @@ function fmtDate(ms) {
 }
 async function logout() { await sb.auth.signOut(); location.href = 'login.html'; }
 
+const YEAR = 365 * 24 * 3600 * 1000;
+async function loadBalance() {
+  const s = await sb.auth.getSession();
+  const r = await sb.from('profiles').select('credits').eq('id', s.data.session.user.id).single();
+  if (!r.error) document.getElementById('balance').textContent = (r.data.credits || 0) + ' €';
+  const l = await sb.from('credit_logs').select('amount,reason,created_at').eq('reseller_id', s.data.session.user.id).order('created_at', { ascending: false }).limit(8);
+  const tb = document.getElementById('logs');
+  tb.innerHTML = '';
+  (l.data || []).forEach(x => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (x.amount > 0 ? '+' : '') + x.amount + '€</td><td>' + esc(x.reason || '') + '</td><td style="color:var(--muted)">' + new Date(x.created_at).toLocaleDateString('fr-FR') + '</td>';
+    tb.appendChild(tr);
+  });
+}
 async function init() {
   if (!sb) {
     document.getElementById('gate').innerHTML =
@@ -116,6 +133,24 @@ async function init() {
   if (!s.data.session) { location.href = 'login.html'; return; }
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  loadBalance();
+  loadDevices();
+}
+async function setLicenseReseller(id, status, type, exp, days) {
+  const cost = type === 'lifetime' ? 10 : type === 'annual' ? 5 : 0;
+  if (cost > 0) {
+    const s = await sb.auth.getSession();
+    const p = await sb.from('profiles').select('credits').eq('id', s.data.session.user.id).single();
+    if (p.error) return show('msgD', false, p.error.message);
+    if ((p.data.credits || 0) < cost) return show('msgD', false, 'Not enough credits (' + (p.data.credits || 0) + '€ < ' + cost + '€).');
+    const upd = await sb.from('profiles').update({ credits: (p.data.credits || 0) - cost }).eq('id', s.data.session.user.id);
+    if (upd.error) return show('msgD', false, upd.error.message);
+    await sb.from('credit_logs').insert({ reseller_id: s.data.session.user.id, amount: -cost, reason: type + ' for ' + id });
+    loadBalance();
+  }
+  const r = await sb.from('licenses').upsert({ device_id: id, status, type, expires_at: exp, days_remaining: days }, { onConflict: 'device_id' });
+  if (r.error) return show('msgD', false, r.error.message);
+  show('msgD', true, 'Licence updated' + (cost ? ' (-' + cost + '€)' : '') + '.');
   loadDevices();
 }
 async function loadDevices() {
@@ -123,7 +158,7 @@ async function loadDevices() {
   if (d.error) return show('msgD', false, d.error.message);
   if (!d.data || !d.data.length) {
     document.getElementById('devices').innerHTML =
-      '<tr><td colspan="3" style="color:var(--muted)">No devices yet. Ask the admin to assign devices to your account.</td></tr>';
+      '<tr><td colspan="4" style="color:var(--muted)">No devices yet. Ask the admin to assign devices to your account.</td></tr>';
     return;
   }
   const ids = d.data.map(x => x.device_id);
@@ -140,7 +175,21 @@ async function loadDevices() {
     const tr = document.createElement('tr');
     tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div></td>' +
       '<td><span class="pill' + (st === 'trial' ? ' trial' : '') + '">' + esc(st + (L && L.type ? ' · ' + L.type : '')) + '</span></td>' +
-      '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td>';
+      '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td><td><div class="rowbtns"></div></td>';
+    const box = tr.querySelector('.rowbtns');
+    const mk = (t, cls, type) => {
+      const b = document.createElement('button');
+      b.className = 'btn ' + cls; b.textContent = t;
+      b.onclick = () => {
+        if (type === 'lifetime') setLicenseReseller(dev.device_id, 'active', 'lifetime', null, null);
+        else if (type === 'annual') setLicenseReseller(dev.device_id, 'active', 'annual', Date.now() + YEAR, 365);
+        else setLicenseReseller(dev.device_id, 'trial', null, null, null);
+      };
+      box.appendChild(b);
+    };
+    mk('Lifetime (10€)', 'gold', 'lifetime');
+    mk('Annual (5€)', 'dark', 'annual');
+    mk('Trial', 'dark', 'trial');
     tb.appendChild(tr);
     const o = document.createElement('option');
     o.value = dev.device_id; o.textContent = dev.device_id;
@@ -171,19 +220,32 @@ async function loadPlaylists() {
   });
 }
 document.getElementById('pdev').addEventListener('change', loadPlaylists);
+function updateTypeUIReseller() {
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
+  document.getElementById('lurl').textContent = isXt ? 'Server URL (Xtream)' : 'M3U / M3U8 URL';
+  document.getElementById('purl').placeholder = isXt ? 'https://server.example:8080' : 'https://…/playlist.m3u';
+  document.getElementById('xfields').style.display = isXt ? '' : 'none';
+  document.getElementById('lepg').style.display = isXt ? 'none' : '';
+  document.getElementById('pepg').style.display = isXt ? 'none' : '';
+  if (isXt) document.getElementById('pepg').value = '';
+}
+document.getElementById('ptype').addEventListener('change', updateTypeUIReseller);
+updateTypeUIReseller();
 async function addPlaylist() {
   const id = document.getElementById('pdev').value;
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
   const body = {
     device_id: id,
     name: document.getElementById('pname').value.trim() || 'Playlist',
     type: document.getElementById('ptype').value,
     url: document.getElementById('purl').value.trim(),
-    username: document.getElementById('puser').value.trim(),
-    password: document.getElementById('ppass').value,
-    origin: 'REMOTE', epg_url: ''
+    username: isXt ? document.getElementById('puser').value.trim() : '',
+    password: isXt ? document.getElementById('ppass').value : '',
+    origin: 'REMOTE', epg_url: isXt ? '' : document.getElementById('pepg').value.trim()
   };
   if (!id) return show('msgP', false, 'No device.');
   if (!body.url) return show('msgP', false, 'Enter the URL.');
+  if (isXt && (!body.username || !body.password)) return show('msgP', false, 'Xtream needs username + password.');
   const r = await sb.from('playlists').insert(body);
   if (r.error) return show('msgP', false, r.error.message);
   show('msgP', true, 'Saved. Press Sync on the TV.');

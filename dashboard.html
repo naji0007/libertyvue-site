@@ -87,11 +87,11 @@
       <div class="msg" id="msgP"></div>
     </div></div>
 
-    <div id="pane-accounts" class="pane"><div class="card"><h3>Accounts</h3><div style="overflow-x:auto"><table>
-      <thead><tr><th>Email</th><th>Role</th><th></th></tr></thead>
+    <div id="pane-accounts" class="pane"><div class="card"><h3>Accounts — credits</h3><div style="overflow-x:auto"><table>
+      <thead><tr><th>Email</th><th>Role</th><th>Credits</th><th></th></tr></thead>
       <tbody id="users"></tbody>
     </table></div><div class="msg" id="msgU"></div>
-      <p style="color:var(--muted);font-size:13px;margin-top:10px">Create accounts in Supabase → Authentication → Users, then set their role here.</p>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">Create accounts in Supabase → Authentication → Users, then set their role here. Credits: Annual = 5€, Lifetime = 10€.</p>
     </div></div>
   </div>
 
@@ -203,12 +203,26 @@ async function loadDevices() {
   loadPlaylists();
 }
 async function setLicense(id, status, type, exp, days) {
+  const cost = type === 'lifetime' ? 10 : type === 'annual' ? 5 : 0;
+  if (cost > 0) {
+    const d = await sb.from('devices').select('reseller_id').eq('device_id', id).single();
+    if (d.error) return show('msgD', false, d.error.message);
+    if (d.data && d.data.reseller_id) {
+      const p = await sb.from('profiles').select('credits').eq('id', d.data.reseller_id).single();
+      if (p.error) return show('msgD', false, p.error.message);
+      if ((p.data.credits || 0) < cost) return show('msgD', false, 'Not enough credits (' + (p.data.credits || 0) + '€ < ' + cost + '€). Recharge first.');
+      const upd = await sb.from('profiles').update({ credits: (p.data.credits || 0) - cost }).eq('id', d.data.reseller_id);
+      if (upd.error) return show('msgD', false, upd.error.message);
+      await sb.from('credit_logs').insert({ reseller_id: d.data.reseller_id, amount: -cost, reason: type + ' for ' + id });
+    }
+  }
   const r = await sb.from('licenses').upsert(
     { device_id: id, status, type, expires_at: exp, days_remaining: days },
     { onConflict: 'device_id' });
   if (r.error) return show('msgD', false, r.error.message);
-  show('msgD', true, 'Licence updated.');
+  show('msgD', true, 'Licence updated' + (cost ? ' (-' + cost + '€)' : '') + '.');
   loadDevices();
+  loadUsers();
 }
 async function delDevice(id) {
   if (!confirm('Delete device ' + id + ' and everything on it?')) return;
@@ -271,13 +285,13 @@ async function addPlaylist() {
   loadPlaylists();
 }
 async function loadUsers() {
-  const r = await sb.from('profiles').select('id,email,role').order('email');
+  const r = await sb.from('profiles').select('id,email,role,credits').order('email');
   if (r.error) return show('msgU', false, r.error.message);
   const tb = document.getElementById('users');
   tb.innerHTML = '';
   (r.data || []).forEach(u => {
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + esc(u.email) + '</td><td><span class="pill">' + esc(u.role || 'reseller') + '</span></td><td><div class="rowbtns"></div></td>';
+    tr.innerHTML = '<td>' + esc(u.email) + '</td><td><span class="pill">' + esc(u.role || 'reseller') + '</span></td><td><span class="pill" style="background:#0B1220">' + (u.credits != null ? u.credits : 0) + ' €</span></td><td><div class="rowbtns"></div></td>';
     const box = tr.querySelector('.rowbtns');
     [['admin', 'Admin'], ['reseller', 'Reseller']].forEach(([role, label]) => {
       const b = document.createElement('button');
@@ -289,6 +303,23 @@ async function loadUsers() {
       };
       box.appendChild(b);
     });
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.placeholder = '+€'; inp.style.cssText = 'width:80px;background:#0B1220;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px';
+    const add = document.createElement('button');
+    add.className = 'btn gold'; add.textContent = 'Recharge';
+    add.onclick = async () => {
+      const v = parseInt(inp.value, 10);
+      if (!v) return show('msgU', false, 'Enter amount.');
+      const cur = await sb.from('profiles').select('credits').eq('id', u.id).single();
+      if (cur.error) return show('msgU', false, cur.error.message);
+      const next = (cur.data.credits || 0) + v;
+      const w = await sb.from('profiles').update({ credits: next }).eq('id', u.id);
+      if (w.error) return show('msgU', false, w.error.message);
+      await sb.from('credit_logs').insert({ reseller_id: u.id, amount: v, reason: 'recharge by admin' });
+      show('msgU', true, 'Credited ' + v + '€ to ' + u.email);
+      loadUsers();
+    };
+    box.appendChild(inp); box.appendChild(add);
     tb.appendChild(tr);
   });
 }
