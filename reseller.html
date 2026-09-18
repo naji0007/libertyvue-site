@@ -131,18 +131,12 @@ async function claimDevice() {
   const id = document.getElementById('claimId').value.trim();
   const key = document.getElementById('claimKey').value.trim();
   if (!id || !key) return show('msgClaim', false, 'Enter Device ID and Key.');
-  const d = await sb.from('devices').select('device_id,reseller_id,device_key').eq('device_id', id).maybeSingle();
-  if (d.error) return show('msgClaim', false, d.error.message);
-  if (!d.data) return show('msgClaim', false, 'Device not found. Ask customer to open app and Sync first.');
-  if (d.data.device_key !== key) return show('msgClaim', false, 'Wrong Device Key.');
-  if (d.data.reseller_id) {
-    const s = await sb.auth.getSession();
-    if (d.data.reseller_id === s.data.session.user.id) return show('msgClaim', true, 'Already yours.');
-    return show('msgClaim', false, 'Device already assigned to another reseller.');
-  }
-  const s = await sb.auth.getSession();
-  const upd = await sb.from('devices').update({ reseller_id: s.data.session.user.id }).eq('device_id', id);
-  if (upd.error) return show('msgClaim', false, upd.error.message);
+  const r = await sb.rpc('claim_device', { p_device_id: id, p_device_key: key });
+  if (r.error) return show('msgClaim', false, r.error.message);
+  if (r.data && r.data.error === 'not_found') return show('msgClaim', false, 'Device not found. Ask customer to open app and Sync first.');
+  if (r.data && r.data.error === 'wrong_key') return show('msgClaim', false, 'Wrong Device Key.');
+  if (r.data && r.data.error === 'already_assigned') return show('msgClaim', false, 'Device already assigned to another reseller.');
+  if (r.data && r.data.ok === 'already_yours') return show('msgClaim', true, 'Already yours.');
   show('msgClaim', true, 'Device claimed! It now appears in your list.');
   loadDevices(); loadBalance();
 }
