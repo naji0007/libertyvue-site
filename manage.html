@@ -87,18 +87,20 @@ function show(id, ok, text) {
   m.textContent = text;
 }
 async function connect() {
+  if (typeof supabase === 'undefined')
+    return show('msg1', false, 'Library blocked (adblock/VPN?). Disable it for this page and reload.');
   const id = document.getElementById('deviceId').value.trim();
   const key = document.getElementById('deviceKey').value.trim();
   if (!id || !key) return show('msg1', false, 'Enter Device ID and Key.');
   show('msg1', true, 'Connecting…');
   try {
     const r = await sb.rpc('sync_device', { p_device_id: id, p_device_key: key });
-    if (r.error) throw r.error;
+    if (r.error) return show('msg1', false, 'Server: ' + (r.error.message || r.error.code || 'unknown'));
     if (r.data && r.data.error === 'forbidden') return show('msg1', false, 'Device not recognized. Check ID and key.');
     dev = { id, key };
     document.getElementById('step2').classList.remove('hidden');
     show('msg1', true, 'Connected. Add your playlist below, then press Sync on the TV.');
-  } catch (e) { show('msg1', false, 'Connection failed. Try again.'); }
+  } catch (e) { show('msg1', false, 'Network: ' + (e.message || e)); }
 }
 async function addPlaylist() {
   const body = {
