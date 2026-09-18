@@ -77,7 +77,17 @@
 <script>
 const URL = "https://zioesbhpkkcqfivtqlqt.supabase.co";
 const KEY = "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF";
-const sb = supabase.createClient(URL, KEY);
+let sb = null;
+try {
+  if (typeof supabase !== 'undefined') sb = supabase.createClient(URL, KEY);
+} catch (e) { sb = null; }
+function needLib() {
+  if (!sb) {
+    show('msg1', false, 'Library blocked (adblock/VPN?). Disable it for this page and reload.');
+    return false;
+  }
+  return true;
+}
 let dev = null;
 document.getElementById('ptype').addEventListener('change', e => {
   document.getElementById('xfields').classList.toggle('hidden', e.target.value !== 'XTREAM');
@@ -88,8 +98,7 @@ function show(id, ok, text) {
   m.textContent = text;
 }
 async function connect() {
-  if (typeof supabase === 'undefined')
-    return show('msg1', false, 'Library blocked (adblock/VPN?). Disable it for this page and reload.');
+  if (!needLib()) return;
   const id = document.getElementById('deviceId').value.trim();
   const key = document.getElementById('deviceKey').value.trim();
   if (!id || !key) return show('msg1', false, 'Enter Device ID and Key.');

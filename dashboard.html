@@ -91,10 +91,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb = supabase.createClient(
+let sb = null;
+try {
+  if (typeof supabase !== 'undefined') sb = supabase.createClient(
   "https://zioesbhpkkcqfivtqlqt.supabase.co",
   "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF"
 );
+} catch (e) { sb = null; }
 const YEAR = 365 * 24 * 3600 * 1000;
 function show(id, ok, text) {
   const m = document.getElementById(id);
@@ -112,6 +115,11 @@ function fmtDate(ms) {
 async function logout() { await sb.auth.signOut(); location.href = 'login.html'; }
 
 async function init() {
+  if (!sb) {
+    document.getElementById('gate').innerHTML =
+      '<div class="eyebrow">Admin</div><h1 class="hero">Library blocked.</h1><p style="color:var(--muted)">Disable adblock/VPN for this page and reload.</p>';
+    return;
+  }
   const s = await sb.auth.getSession();
   if (!s.data.session) { location.href = 'login.html'; return; }
   const p = await sb.from('profiles').select('role').eq('id', s.data.session.user.id).maybeSingle();

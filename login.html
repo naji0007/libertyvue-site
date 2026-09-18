@@ -68,10 +68,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb = supabase.createClient(
+let sb = null;
+try {
+  if (typeof supabase !== 'undefined') sb = supabase.createClient(
   "https://zioesbhpkkcqfivtqlqt.supabase.co",
   "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF"
 );
+} catch (e) { sb = null; }
 let mode = 'reseller';
 function tab(m) {
   mode = m;
@@ -118,6 +121,7 @@ async function setNewPassword() {
   }
 }
 async function login() {
+  if (!sb) return show(false, 'Library blocked (adblock/VPN?). Disable it and reload.');
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   if (!email || !password) return show(false, 'Enter email and password.');
