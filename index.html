@@ -5,66 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LibertyVue Player — IPTV Player for Android TV, Fire TV, LG & Samsung</title>
 <style>
-  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; --border: #293443; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
-  nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; padding: 12px 0 20px; }
-  nav a { color: var(--muted); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 8px; }
-  nav a:hover, nav a.on { color: var(--gold); background: var(--panel); }
-  nav .logo { color: var(--text); font-weight: 900; margin-right: auto; font-size: 17px; }
-  nav .logo span { color: var(--gold); font-size: 10px; letter-spacing: 3px; display: block; }
-  .hero { text-align: center; padding: 28px 0; }
-  .badge { background: var(--gold); color: #191508; font-weight: 900; font-size: 30px; border-radius: 18px; padding: 14px 22px; display: inline-block; }
-  h1 { font-size: 30px; margin: 16px 0 6px; }
-  .tag { color: var(--gold); letter-spacing: 4px; font-size: 12px; }
-  .lead { color: var(--muted); margin: 14px 0 20px; line-height: 1.7; }
-  .btn { display: inline-block; background: var(--gold); color: #191508; font-weight: 800; font-size: 17px; border-radius: 12px; padding: 15px 34px; text-decoration: none; margin: 6px 6px 6px 0; }
-  .btn.ghost { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin: 16px 0; }
-  .card h2 { font-size: 19px; margin-bottom: 8px; color: var(--gold); }
-  .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.75; }
-  .card ul, .card ol { margin: 8px 0 0 20px; }
-  .price { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-  .plan { flex: 1; min-width: 150px; background: #080D15; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
-  .plan b { font-size: 22px; color: var(--gold); display: block; margin: 6px 0; }
-  .plan span { font-size: 13px; color: var(--muted); }
-  footer { color: var(--muted); font-size: 12px; margin-top: 32px; text-align: center; line-height: 2; }
-  footer a { color: var(--gold); }
-  code { background: #080D15; padding: 2px 8px; border-radius: 6px; font-size: 12px; word-break: break-all; }
+  :root { --bg:#060A12; --panel:#101724; --panel2:#0C1320; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,-apple-system,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:12px; padding:13px 26px; font-weight:700; font-size:15px; text-decoration:none; cursor:pointer; border:1px solid transparent; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:var(--panel); color:var(--text); border-color:var(--border); }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+  h1.hero { font-size:clamp(34px,6vw,56px); font-weight:800; line-height:1.08; letter-spacing:-1px; margin-bottom:16px; }
+  .sub { color:var(--muted); font-size:16px; line-height:1.7; max-width:640px; }
+  .hero { padding:40px 0 36px; }
+  .grid { display:grid; gap:16px; }
+  .g4 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .g3 { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+  .g2 { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px; }
+  .card h3 { font-size:17px; margin:14px 0 8px; }
+  .card p, .card li { color:var(--muted); font-size:14px; line-height:1.7; }
+  .card ul, .card ol { margin:6px 0 0 18px; }
+  .chip { width:42px; height:42px; border-radius:50%; background:#1A2436; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--gold); }
+  .sec { margin-top:44px; }
+  .sec h2 { font-size:24px; margin-bottom:6px; }
+  input, select { width:100%; background:#0B1220; border:1px solid var(--border); color:var(--text); border-radius:10px; padding:14px; font-size:14px; margin-top:6px; }
+  label { font-size:13px; color:var(--text); font-weight:600; display:block; margin-top:14px; }
+  .full { width:100%; text-align:center; margin-top:18px; border:none; }
+  .faq { border-bottom:1px solid var(--border); }
+  .faq button { width:100%; background:none; border:none; color:var(--text); font-size:15px; font-weight:600; padding:18px 4px; display:flex; justify-content:space-between; cursor:pointer; text-align:left; }
+  .faq .a { display:none; color:var(--muted); font-size:14px; padding:0 4px 18px; line-height:1.7; }
+  .faq.open .a { display:block; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:56px; line-height:2; }
+  footer a { color:var(--gold); }
+  .note { font-size:13px; color:var(--muted); margin-top:10px; }
+  .ok { color:#7BD88F; } .err { color:#FF7D7D; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav><div class="logo">LibertyVue<span>PLAYER</span></div><a class="on" href="index.html">Home</a><a href="downloads.html">Downloads</a><a href="guides.html">Guides</a><a href="activate.html">Activate</a><a href="support.html">Support</a></nav>
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="guides.html">Guides</a><a class="lnk" href="activate.html">Activate</a><a class="lnk" href="manage.html">Manage playlists</a><a class="lnk" href="support.html">Support</a><a class="lnk" href="login.html">Login</a>
+    <a class="btn dark" style="padding:10px 20px" href="downloads.html">TV preview</a>
+    <a class="btn gold" style="padding:10px 20px" href="activate.html">Activate device</a>
+  </nav>
 
   <div class="hero">
-    <div class="badge">LV</div>
-    <h1>Your media. One beautiful screen.</h1>
-    <div class="tag">7-DAY FREE TRIAL · NO CARD REQUIRED</div>
-    <p class="lead">LibertyVue Player brings your own playlists together in a fast, remote-friendly TV experience. M3U/M3U8 + Xtream Codes. No channels included.</p>
-    <a class="btn" href="downloads.html">Download</a>
-    <a class="btn ghost" href="activate.html">Activate a device</a>
+    <div class="eyebrow">IPTV player · 7-day free trial</div>
+    <h1>Your media.<br>One beautiful screen.</h1>
+    <p class="sub">LibertyVue Player brings your own playlists together in a fast, remote-friendly TV experience. M3U/M3U8 + Xtream Codes. No channels included.</p>
+    <a class="btn gold" href="downloads.html">Download</a>
+    <a class="btn dark" href="activate.html">Activate a device</a>
   </div>
 
-  <div class="card"><h2>Live TV, films, series, radio</h2><p>Browse your library with favourites, recent viewing, search and categories. French, English and Arabic interface. Works on Android TV, Google TV, Fire TV and phones.</p></div>
-
-  <div class="card"><h2>Simple setup in 3 steps</h2><ol><li><b>Install the app</b> on your TV or Fire TV (<a href="downloads.html">download page</a>).</li><li><b>Add your playlist</b> with your M3U link or Xtream login.</li><li><b>Start watching</b> — your library appears after a quick refresh.</li></ol></div>
-
-  <div class="card"><h2>One licence per device</h2>
-    <div class="price">
-      <div class="plan">Trial<span>7 days</span><b>Free</b><span>no card</span></div>
-      <div class="plan">Annual<span>12 months · updates</span><b>€5</b><span>per device</span></div>
-      <div class="plan">Lifetime<span>one payment · updates</span><b>€10</b><span>per device</span></div>
-    </div>
+  <div class="grid g4">
+    <div class="card"><div class="chip">▣</div><h3>Live TV</h3><p>Thousands of channels with zapping, EPG guide and favourites.</p></div>
+    <div class="card"><div class="chip">▶</div><h3>Films & Series</h3><p>Your VOD library with posters, search and multi-screen.</p></div>
+    <div class="card"><div class="chip">◉</div><h3>Radio</h3><p>Stations from your provider, one tap away.</p></div>
+    <div class="card"><div class="chip">★</div><h3>3 Languages</h3><p>French, English and Arabic interface on every screen.</p></div>
   </div>
 
-  <div class="card"><h2>Good to know</h2><ul>
-    <li>LibertyVue is software only — it does not sell channels or playlists.</li>
-    <li>The free trial starts on first launch, automatically.</li>
-    <li>One licence covers one TV/device.</li>
-    <li>M3U/M3U8 and Xtream Codes are both supported.</li>
-  </ul></div>
+  <div class="sec"><div class="eyebrow">Simple setup</div><h2>From installation to playback in three steps.</h2>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card"><div class="chip">1</div><h3>Install the app</h3><p>Open LibertyVue Player on your Android TV or Fire TV device.</p></div>
+    <div class="card"><div class="chip">2</div><h3>Add your playlist</h3><p>Use your M3U link or Xtream login from an authorised provider.</p></div>
+    <div class="card"><div class="chip">3</div><h3>Start watching</h3><p>Your library appears on the TV after a quick refresh.</p></div>
+  </div></div>
+
+  <div class="sec"><div class="eyebrow">Licences</div><h2>One licence per device.</h2>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card"><h3>Trial</h3><p style="font-size:26px;color:var(--gold);font-weight:800">Free</p><p>7 days · automatic · no card</p></div>
+    <div class="card"><h3>Annual</h3><p style="font-size:26px;color:var(--gold);font-weight:800">€5</p><p>12 months · updates included · per device</p></div>
+    <div class="card"><h3>Lifetime</h3><p style="font-size:26px;color:var(--gold);font-weight:800">€10</p><p>One payment · updates included · per device</p></div>
+  </div></div>
 
   <footer>© 2026 LibertyVue Player · No channels or playlists are included.</footer>
 </div>

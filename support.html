@@ -5,36 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Support — LibertyVue Player</title>
 <style>
-  :root { --navy: #080D15; --panel: #121B28; --gold: #E8B64A; --text: #F6F7FA; --muted: #AAB8C8; --border: #293443; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--navy); color: var(--text); font-family: system-ui, sans-serif; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
-  nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; padding: 12px 0 20px; }
-  nav a { color: var(--muted); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 8px; }
-  nav a:hover, nav a.on { color: var(--gold); background: var(--panel); }
-  nav .logo { color: var(--text); font-weight: 900; margin-right: auto; font-size: 17px; }
-  nav .logo span { color: var(--gold); font-size: 10px; letter-spacing: 3px; display: block; }
-  h1 { font-size: 26px; margin: 10px 0 6px; }
-  .lead { color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
-  .card h2 { font-size: 16px; margin-bottom: 6px; }
-  .card p { color: var(--muted); font-size: 14px; line-height: 1.75; }
-  footer { color: var(--muted); font-size: 12px; margin-top: 28px; text-align: center; line-height: 2; }
-  footer a { color: var(--gold); }
+  :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:12px; padding:13px 26px; font-weight:700; font-size:15px; text-decoration:none; cursor:pointer; border:1px solid transparent; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:var(--panel); color:var(--text); border-color:var(--border); }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:34px 0 14px; }
+  h1.hero { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; max-width:640px; }
+  .sub { color:var(--muted); margin:14px 0 28px; line-height:1.7; max-width:640px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; }
+  .card h3 { font-size:16px; margin:12px 0 8px; }
+  .card p, .card li { color:var(--muted); font-size:14px; line-height:1.7; }
+  .card ol { margin:8px 0 0 18px; }
+  .chip { width:42px; height:42px; border-radius:50%; background:#1A2436; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--gold); }
+  .cols { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); margin-top:16px; }
+  .faq { border-bottom:1px solid var(--border); }
+  .faq button { width:100%; background:none; border:none; color:var(--text); font-size:15px; font-weight:600; padding:18px 4px; display:flex; justify-content:space-between; cursor:pointer; text-align:left; font-family:inherit; }
+  .faq button span:last-child { color:var(--muted); }
+  .faq .a { display:none; color:var(--muted); font-size:14px; padding:0 4px 18px; line-height:1.7; }
+  .faq.open .a { display:block; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:56px; }
+  footer a { color:var(--gold); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav><div class="logo">LibertyVue<span>PLAYER</span></div><a href="index.html">Home</a><a href="downloads.html">Downloads</a><a href="guides.html">Guides</a><a href="activate.html">Activate</a><a class="on" href="support.html">Support</a></nav>
-  <h1>Support</h1>
-  <p class="lead">Straight answers before you install.</p>
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="guides.html">Guides</a><a class="lnk" href="activate.html">Activate</a><a class="lnk" href="manage.html">Manage playlists</a><a class="lnk on" href="support.html">Support</a><a class="lnk" href="login.html">Login</a>
+    <a class="btn dark" style="padding:10px 20px" href="downloads.html">TV preview</a>
+    <a class="btn gold" style="padding:10px 20px" href="activate.html">Activate device</a>
+  </nav>
 
-  <div class="card"><h2>Does the app include channels?</h2><p>No. LibertyVue Player is software only — bring your own playlists or free-to-air streams you are authorised to watch.</p></div>
-  <div class="card"><h2>When does the free trial start?</h2><p>On first launch, automatically. Seven days, no card required.</p></div>
-  <div class="card"><h2>Can one licence be used on several TVs?</h2><p>No — one licence covers one device (one Device ID).</p></div>
-  <div class="card"><h2>Which playlist formats are supported?</h2><p>M3U/M3U8 links and Xtream Codes (server + username + password).</p></div>
-  <div class="card"><h2>A channel has no sound?</h2><p>Open it, tap the speaker button to try another audio track. Some providers use codecs your device cannot decode — use the external-player button (VLC) in that case.</p></div>
-  <div class="card"><h2>The app shows a loading message?</h2><p>Large providers take a while: live channels appear first, then films and series load automatically with progress numbers. If it stops with an error, check your connection and refresh.</p></div>
+  <div class="eyebrow">Help centre</div>
+  <h1 class="hero">Setup help without the guesswork.</h1>
+  <p class="sub">Follow the four steps below. If your playlist does not play, test the connection and contact the provider responsible for that playlist.</p>
+
+  <div class="grid">
+    <div class="card"><div class="chip">⬇</div><h3>1. Install</h3><p>Install LibertyVue Player on a supported Android TV or Fire TV device.</p></div>
+    <div class="card"><div class="chip">⌁</div><h3>2. Note your codes</h3><p>Open the app and keep the Device ID and Device Key shown on screen.</p></div>
+    <div class="card"><div class="chip">≣</div><h3>3. Add a playlist</h3><p>Open <a href="manage.html" style="color:var(--gold)">Manage playlists</a> on this website and add an authorised M3U/M3U8 URL.</p></div>
+    <div class="card"><div class="chip">↻</div><h3>4. Refresh</h3><p>Restart or refresh the TV app to load the updated playlist.</p></div>
+  </div>
+
+  <div class="cols">
+    <div class="card"><div class="chip">?</div><h3>Quick checks</h3><ul><li>Confirm the TV has a stable internet connection.</li><li>Restart the app after changing a playlist.</li><li>Large providers load live first, then films and series.</li></ul></div>
+    <div class="card" style="padding-top:8px">
+      <div class="faq"><button onclick="this.parentElement.classList.toggle('open')">The app stays on the loading screen <span>▾</span></button><div class="a">Big playlists take a while. Live channels appear first automatically. If an error appears after a minute, check the connection and refresh.</div></div>
+      <div class="faq"><button onclick="this.parentElement.classList.toggle('open')">A stream freezes or buffers <span>▾</span></button><div class="a">Usually the provider or the Wi-Fi. Try a lower rendition (HD instead of 4K) or the external-player button with VLC.</div></div>
+      <div class="faq"><button onclick="this.parentElement.classList.toggle('open')">Where are my device codes? <span>▾</span></button><div class="a">At the bottom of the app home screen: ID LV-XXXX-XXXXX and Key XXXX-XXXX.</div></div>
+      <div class="faq"><button onclick="this.parentElement.classList.toggle('open')">A channel has no sound <span>▾</span></button><div class="a">Open the speaker button in the player to try another audio track. Some providers use codecs the device cannot decode — use the external-player button (VLC) in that case.</div></div>
+    </div>
+  </div>
 
   <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
 </div>
