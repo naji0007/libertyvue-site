@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin dashboard — LibertyVue Player</title>
+<style>
+  :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:10px; padding:10px 18px; font-weight:700; font-size:13px; cursor:pointer; border:1px solid transparent; text-decoration:none; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:#1A2436; color:var(--text); border-color:var(--border); }
+  .btn.danger { background:transparent; color:#FF7D7D; border-color:#5a2b2b; }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:30px 0 12px; }
+  h1.hero { font-size:clamp(28px,4vw,40px); font-weight:800; letter-spacing:-1px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:16px; }
+  .tabs { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+  .tabs button { flex:1; min-width:120px; background:var(--panel); color:var(--muted); border:1px solid var(--border); border-radius:10px; padding:12px; font-weight:700; cursor:pointer; }
+  .tabs button.on { background:var(--gold); color:#191508; border-color:var(--gold); }
+  .pane { display:none; } .pane.on { display:block; }
+  .card h3 { font-size:17px; margin-bottom:12px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:12px; }
+  td .mono { font-family:monospace; font-size:12px; word-break:break-all; }
+  .rowbtns { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { display:inline-block; font-size:11px; border-radius:20px; padding:3px 12px; background:#1A2436; color:var(--gold); }
+  .pill.trial { color:var(--muted); }
+  input, select { width:100%; background:#0B1220; border:1px solid var(--border); color:var(--text); border-radius:10px; padding:12px; font-size:14px; margin-top:6px; }
+  label { font-size:12px; font-weight:600; display:block; margin-top:12px; color:var(--muted); }
+  .grid2 { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+  .msg { margin-top:12px; font-size:13px; padding:10px; border-radius:10px; display:none; }
+  .msg.ok { display:block; background:#0E2A1A; color:#7BD88F; }
+  .msg.err { display:block; background:#2A1414; color:#FF7D7D; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:48px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="manage.html">Manage</a><a class="lnk on" href="dashboard.html">Dashboard</a><a class="lnk" href="login.html">Login</a>
+    <a class="btn dark" href="#" id="logout" onclick="logout();return false;">Log out</a>
+  </nav>
+
+  <div id="gate"><div class="eyebrow">Admin</div><h1 class="hero">Checking access…</h1></div>
+
+  <div id="app" style="display:none">
+    <div class="eyebrow">Admin dashboard</div>
+    <h1 class="hero">Devices & licences.</h1>
+    <div class="tabs">
+      <button id="tDev" class="on" onclick="showTab('devices')">Devices</button>
+      <button id="tPlay" onclick="showTab('playlists')">Playlists</button>
+      <button id="tAcc" onclick="showTab('accounts')">Accounts</button>
+    </div>
+
+    <div id="pane-devices" class="pane on"><div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
+      <thead><tr><th>Device</th><th>Licence</th><th>Expires</th><th>Reseller</th><th>Actions</th></tr></thead>
+      <tbody id="devices"></tbody>
+    </table></div><div class="msg" id="msgD"></div></div></div>
+
+    <div id="pane-playlists" class="pane"><div class="card"><h3>Playlists</h3>
+      <label>Device</label><select id="pdev"></select>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Name</th><th>Type</th><th>URL</th><th></th></tr></thead>
+        <tbody id="plist"></tbody>
+      </table></div>
+      <div class="grid2">
+        <div><label>Name</label><input id="pname" placeholder="My playlist"></div>
+        <div><label>Type</label><select id="ptype"><option value="M3U">M3U / M3U8</option><option value="XTREAM">Xtream</option></select></div>
+      </div>
+      <label id="lurl">M3U / M3U8 URL</label><input id="purl" placeholder="https://…/playlist.m3u">
+      <div id="xfields" class="grid2">
+        <div><label>Username</label><input id="puser" placeholder="Identifiant"></div>
+        <div><label>Password</label><input id="ppass" type="password" placeholder="••••••••"></div>
+      </div>
+      <label id="lepg">EPG / XMLTV URL (optional — M3U only)</label><input id="pepg" placeholder="https://…/guide.xml">
+      <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
+      <div class="msg" id="msgP"></div>
+    </div></div>
+
+    <div id="pane-accounts" class="pane"><div class="card"><h3>Accounts — credits</h3><div style="overflow-x:auto"><table>
+      <thead><tr><th>Email</th><th>Role</th><th>Credits</th><th></th></tr></thead>
+      <tbody id="users"></tbody>
+    </table></div><div class="msg" id="msgU"></div>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">Create accounts in Supabase → Authentication → Users, then set their role here. Credits: Annual = 5€, Lifetime = 10€.</p>
+    </div></div>
+  </div>
+
+  <footer>© 2026 LibertyVue Player</footer>
+</div>
+
+<script src="./supabase.js"></script>
+<script>
+let sb = null;
+try {
+  if (typeof supabase !== 'undefined') sb = supabase.createClient(
+  "https://zioesbhpkkcqfivtqlqt.supabase.co",
+  "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF"
+);
+} catch (e) { sb = null; }
+const YEAR = 365 * 24 * 3600 * 1000;
+function show(id, ok, text) {
+  const m = document.getElementById(id);
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  m.textContent = text;
+}
+function showTab(name) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
+  document.getElementById('pane-' + name).classList.add('on');
+  document.getElementById(name === 'devices' ? 'tDev' : name === 'playlists' ? 'tPlay' : 'tAcc').classList.add('on');
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
+function fmtDate(ms) {
+  if (!ms) return '—';
+  const d = new Date(Number(ms));
+  return d.toLocaleDateString('fr-FR');
+}
+async function logout() { await sb.auth.signOut(); location.href = 'login.html'; }
+
+async function init() {
+  if (!sb) {
+    document.getElementById('gate').innerHTML =
+      '<div class="eyebrow">Admin</div><h1 class="hero">Library blocked.</h1><p style="color:var(--muted)">Disable adblock/VPN for this page and reload.</p>';
+    return;
+  }
+  const s = await sb.auth.getSession();
+  if (!s.data.session) { location.href = 'login.html'; return; }
+  const p = await sb.from('profiles').select('role').eq('id', s.data.session.user.id).maybeSingle();
+  if (p.error || !p.data || p.data.role !== 'admin') {
+    document.getElementById('gate').innerHTML =
+      '<div class="eyebrow">Admin</div><h1 class="hero">Not authorized.</h1><p style="color:var(--muted)">This space is for admins. <a style="color:var(--gold)" href="login.html">Log in</a> with an admin account.</p>';
+    return;
+  }
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadDevices();
+  loadUsers();
+}
+
+async function loadDevices() {
+  const d = await sb.from('devices').select('*').order('created_at', { ascending: false });
+  if (d.error) return show('msgD', false, d.error.message);
+  const l = await sb.from('licenses').select('*');
+  const lic = {};
+  (l.data || []).forEach(x => lic[x.device_id] = x);
+  const tb = document.getElementById('devices');
+  tb.innerHTML = '';
+  const sel = document.getElementById('pdev');
+  sel.innerHTML = '';
+  const users = await sb.from('profiles').select('id,email').order('email');
+  const resellers = (users.data || []);
+  (d.data || []).forEach(dev => {
+    const L = lic[dev.device_id];
+    const st = L ? L.status : 'trial';
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div><div class="mono" style="color:var(--muted)">' + esc(dev.device_key) + '</div></td>' +
+      '<td><span class="pill' + (st === 'trial' ? ' trial' : '') + '">' + esc(st + (L && L.type ? ' · ' + L.type : '')) + '</span></td>' +
+      '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td><td></td><td><div class="rowbtns"></div></td>';
+    const rsel = document.createElement('select');
+    rsel.style.cssText = 'background:#0B1220;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;max-width:190px';
+    const none = document.createElement('option');
+    none.value = ''; none.textContent = '— none —';
+    rsel.appendChild(none);
+    resellers.forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.id; o.textContent = u.email || u.id.slice(0, 8);
+      if (dev.reseller_id === u.id) o.selected = true;
+      rsel.appendChild(o);
+    });
+    rsel.onchange = async () => {
+      const w = await sb.from('devices').update({ reseller_id: rsel.value || null }).eq('device_id', dev.device_id);
+      if (w.error) return show('msgD', false, w.error.message);
+      show('msgD', true, 'Reseller assigned.');
+    };
+    tr.children[3].appendChild(rsel);
+    const box = tr.querySelector('.rowbtns');
+    const mk = (t, cls, fn) => {
+      const b = document.createElement('button');
+      b.className = 'btn ' + cls; b.textContent = t;
+      b.onclick = fn; box.appendChild(b);
+    };
+    mk('Lifetime', 'gold', () => setLicense(dev.device_id, 'active', 'lifetime', null, null));
+    mk('Annual', 'dark', () => setLicense(dev.device_id, 'active', 'annual', Date.now() + YEAR, 365));
+    mk('Trial', 'dark', () => setLicense(dev.device_id, 'trial', null, null, null));
+    mk('Delete', 'danger', () => delDevice(dev.device_id));
+    tb.appendChild(tr);
+    const o = document.createElement('option');
+    o.value = dev.device_id; o.textContent = dev.device_id;
+    sel.appendChild(o);
+  });
+  loadPlaylists();
+}
+async function setLicense(id, status, type, exp, days) {
+  const cost = type === 'lifetime' ? 10 : type === 'annual' ? 5 : 0;
+  if (cost > 0) {
+    const d = await sb.from('devices').select('reseller_id').eq('device_id', id).single();
+    if (d.error) return show('msgD', false, d.error.message);
+    if (d.data && d.data.reseller_id) {
+      const p = await sb.from('profiles').select('credits').eq('id', d.data.reseller_id).single();
+      if (p.error) return show('msgD', false, p.error.message);
+      if ((p.data.credits || 0) < cost) return show('msgD', false, 'Not enough credits (' + (p.data.credits || 0) + '€ < ' + cost + '€). Recharge first.');
+      const upd = await sb.from('profiles').update({ credits: (p.data.credits || 0) - cost }).eq('id', d.data.reseller_id);
+      if (upd.error) return show('msgD', false, upd.error.message);
+      await sb.from('credit_logs').insert({ reseller_id: d.data.reseller_id, amount: -cost, reason: type + ' for ' + id });
+    }
+  }
+  const r = await sb.from('licenses').upsert(
+    { device_id: id, status, type, expires_at: exp, days_remaining: days },
+    { onConflict: 'device_id' });
+  if (r.error) return show('msgD', false, r.error.message);
+  show('msgD', true, 'Licence updated' + (cost ? ' (-' + cost + '€)' : '') + '.');
+  loadDevices();
+  loadUsers();
+}
+async function delDevice(id) {
+  if (!confirm('Delete device ' + id + ' and everything on it?')) return;
+  const r = await sb.from('devices').delete().eq('device_id', id);
+  if (r.error) return show('msgD', false, r.error.message);
+  loadDevices();
+}
+async function loadPlaylists() {
+  const id = document.getElementById('pdev').value;
+  if (!id) return;
+  const r = await sb.from('playlists').select('*').eq('device_id', id).order('name');
+  if (r.error) return show('msgP', false, r.error.message);
+  const tb = document.getElementById('plist');
+  tb.innerHTML = '';
+  (r.data || []).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + esc(p.name) + '</td><td>' + esc(p.type) + '</td><td><div class="mono">' + esc(p.url) + '</div></td><td></td>';
+    const b = document.createElement('button');
+    b.className = 'btn danger'; b.textContent = 'Delete';
+    b.onclick = async () => {
+      if (!confirm('Delete ' + p.name + '?')) return;
+      const d = await sb.from('playlists').delete().eq('id', p.id);
+      if (d.error) return show('msgP', false, d.error.message);
+      loadPlaylists();
+    };
+    tr.lastChild.appendChild(b);
+    tb.appendChild(tr);
+  });
+}
+document.getElementById('pdev').addEventListener('change', loadPlaylists);
+function updateTypeUI() {
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
+  document.getElementById('lurl').textContent = isXt ? 'Server URL (Xtream)' : 'M3U / M3U8 URL';
+  document.getElementById('purl').placeholder = isXt ? 'https://server.example:8080' : 'https://…/playlist.m3u';
+  document.getElementById('xfields').style.display = isXt ? '' : 'none';
+  document.getElementById('lepg').style.display = isXt ? 'none' : '';
+  document.getElementById('pepg').style.display = isXt ? 'none' : '';
+  if (isXt) { document.getElementById('pepg').value = ''; }
+}
+document.getElementById('ptype').addEventListener('change', updateTypeUI);
+updateTypeUI();
+async function addPlaylist() {
+  const id = document.getElementById('pdev').value;
+  const isXt = document.getElementById('ptype').value === 'XTREAM';
+  const body = {
+    device_id: id,
+    name: document.getElementById('pname').value.trim() || 'Playlist',
+    type: document.getElementById('ptype').value,
+    url: document.getElementById('purl').value.trim(),
+    username: isXt ? document.getElementById('puser').value.trim() : '',
+    password: isXt ? document.getElementById('ppass').value : '',
+    origin: 'REMOTE', epg_url: isXt ? '' : document.getElementById('pepg').value.trim()
+  };
+  if (!id) return show('msgP', false, 'Choose a device first.');
+  if (!body.url) return show('msgP', false, 'Enter the URL.');
+  if (isXt && (!body.username || !body.password)) return show('msgP', false, 'Xtream needs username + password.');
+  const r = await sb.from('playlists').insert(body);
+  if (r.error) return show('msgP', false, r.error.message);
+  show('msgP', true, 'Saved. Press Sync on the TV.');
+  loadPlaylists();
+}
+async function loadUsers() {
+  const r = await sb.from('profiles').select('id,email,role,credits').order('email');
+  if (r.error) return show('msgU', false, r.error.message);
+  const tb = document.getElementById('users');
+  tb.innerHTML = '';
+  (r.data || []).forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + esc(u.email) + '</td><td><span class="pill">' + esc(u.role || 'reseller') + '</span></td><td><span class="pill" style="background:#0B1220">' + (u.credits != null ? u.credits : 0) + ' €</span></td><td><div class="rowbtns"></div></td>';
+    const box = tr.querySelector('.rowbtns');
+    [['admin', 'Admin'], ['reseller', 'Reseller']].forEach(([role, label]) => {
+      const b = document.createElement('button');
+      b.className = 'btn dark'; b.textContent = label;
+      b.onclick = async () => {
+        const w = await sb.from('profiles').update({ role }).eq('id', u.id);
+        if (w.error) return show('msgU', false, w.error.message);
+        loadUsers();
+      };
+      box.appendChild(b);
+    });
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.placeholder = '+€'; inp.style.cssText = 'width:80px;background:#0B1220;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px';
+    const add = document.createElement('button');
+    add.className = 'btn gold'; add.textContent = 'Recharge';
+    add.onclick = async () => {
+      const v = parseInt(inp.value, 10);
+      if (!v) return show('msgU', false, 'Enter amount.');
+      const cur = await sb.from('profiles').select('credits').eq('id', u.id).single();
+      if (cur.error) return show('msgU', false, cur.error.message);
+      const next = (cur.data.credits || 0) + v;
+      const w = await sb.from('profiles').update({ credits: next }).eq('id', u.id);
+      if (w.error) return show('msgU', false, w.error.message);
+      await sb.from('credit_logs').insert({ reseller_id: u.id, amount: v, reason: 'recharge by admin' });
+      show('msgU', true, 'Credited ' + v + '€ to ' + u.email);
+      loadUsers();
+    };
+    box.appendChild(inp); box.appendChild(add);
+    tb.appendChild(tr);
+  });
+}
+init();
+</script>
+</body>
+</html>

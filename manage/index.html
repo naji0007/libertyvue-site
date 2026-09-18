@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage playlists — LibertyVue Player</title>
+<style>
+  :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:12px; padding:13px 26px; font-weight:700; font-size:15px; text-decoration:none; cursor:pointer; border:1px solid transparent; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:var(--panel); color:var(--text); border-color:var(--border); }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:34px 0 14px; }
+  h1.hero { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; }
+  .sub { color:var(--muted); margin:14px 0 28px; line-height:1.7; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:28px; }
+  .card h3 { font-size:19px; margin-bottom:6px; }
+  label { font-size:13px; font-weight:600; display:block; margin-top:16px; }
+  input, select { width:100%; background:#0B1220; border:1px solid var(--border); color:var(--text); border-radius:10px; padding:14px; font-size:14px; margin-top:6px; }
+  .full { width:100%; text-align:center; margin-top:20px; border:none; font-size:16px; }
+  .msg { margin-top:14px; font-size:14px; display:none; padding:12px; border-radius:10px; }
+  .msg.ok { display:block; background:#0E2A1A; color:#7BD88F; }
+  .msg.err { display:block; background:#2A1414; color:#FF7D7D; }
+  .hidden { display:none; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:48px; }
+  footer a { color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="guides.html">Guides</a><a class="lnk" href="activate.html">Activate</a><a class="lnk on" href="manage.html">Manage playlists</a><a class="lnk" href="support.html">Support</a><a class="lnk" href="login.html">Login</a>
+    <a class="btn dark" style="padding:10px 20px" href="downloads.html">TV preview</a>
+    <a class="btn gold" style="padding:10px 20px" href="activate.html">Activate device</a>
+  </nav>
+
+  <div class="eyebrow">Playlist manager</div>
+  <h1 class="hero">Update your TV from any browser.</h1>
+  <p class="sub">Enter the Device ID and Device Key shown in LibertyVue Player, then add your authorised M3U or Xtream connection.</p>
+
+  <div class="card" id="step1">
+    <h3>Connect your device</h3>
+    <label>Device ID</label><input id="deviceId" placeholder="LV-12ABC-34DEF">
+    <label>Device Key</label><input id="deviceKey" placeholder="AB12-CD34">
+    <button class="btn gold full" onclick="connect()">Connect device</button>
+    <div class="msg" id="msg1"></div>
+  </div>
+
+  <div class="card hidden" id="step2">
+    <h3>Add a playlist</h3>
+    <label>Type</label>
+    <select id="ptype"><option value="M3U">M3U / M3U8</option><option value="XTREAM">Xtream Codes</option></select>
+    <label>Name</label><input id="pname" placeholder="My playlist">
+    <label>M3U URL / Server URL</label><input id="purl" placeholder="https://…">
+    <div id="xfields" class="hidden">
+      <label>Username</label><input id="puser" placeholder="Identifiant">
+      <label>Password</label><input id="ppass" type="password" placeholder="Mot de passe">
+    </div>
+    <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
+    <button class="btn gold full" onclick="addPlaylist()">Save to device</button>
+    <div class="msg" id="msg2"></div>
+  </div>
+
+  <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
+</div>
+
+<script src="./supabase.js"></script>
+<script>
+const URL = "https://zioesbhpkkcqfivtqlqt.supabase.co";
+const KEY = "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF";
+let sb = null;
+try {
+  if (typeof supabase !== 'undefined') sb = supabase.createClient(URL, KEY);
+} catch (e) { sb = null; }
+function needLib() {
+  if (!sb) {
+    show('msg1', false, 'Library blocked (adblock/VPN?). Disable it for this page and reload.');
+    return false;
+  }
+  return true;
+}
+let dev = null;
+document.getElementById('ptype').addEventListener('change', e => {
+  document.getElementById('xfields').classList.toggle('hidden', e.target.value !== 'XTREAM');
+});
+function show(id, ok, text) {
+  const m = document.getElementById(id);
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  m.textContent = text;
+}
+async function connect() {
+  if (!needLib()) return;
+  const id = document.getElementById('deviceId').value.trim();
+  const key = document.getElementById('deviceKey').value.trim();
+  if (!id || !key) return show('msg1', false, 'Enter Device ID and Key.');
+  show('msg1', true, 'Connecting…');
+  try {
+    const r = await sb.rpc('sync_device', { p_device_id: id, p_device_key: key });
+    if (r.error) return show('msg1', false, 'Server: ' + (r.error.message || r.error.code || 'unknown'));
+    if (r.data && r.data.error === 'forbidden') return show('msg1', false, 'Device not recognized. Check ID and key.');
+    dev = { id, key };
+    document.getElementById('step2').classList.remove('hidden');
+    show('msg1', true, 'Connected. Add your playlist below, then press Sync on the TV.');
+  } catch (e) { show('msg1', false, 'Network: ' + (e.message || e)); }
+}
+async function addPlaylist() {
+  const body = {
+    p_device_id: dev.id, p_device_key: dev.key,
+    p_name: document.getElementById('pname').value.trim() || 'Playlist',
+    p_type: document.getElementById('ptype').value,
+    p_url: document.getElementById('purl').value.trim(),
+    p_username: document.getElementById('puser').value.trim(),
+    p_password: document.getElementById('ppass').value,
+    p_epg_url: document.getElementById('pepg').value.trim()
+  };
+  if (!body.p_url) return show('msg2', false, 'Enter the URL.');
+  if (body.p_type === 'XTREAM' && (!body.p_username || !body.p_password))
+    return show('msg2', false, 'Xtream needs username + password.');
+  try {
+    const r = await sb.rpc('add_playlist', body);
+    if (r.error) throw r.error;
+    if (r.data && r.data.error) return show('msg2', false, 'Rejected. Check device codes.');
+    show('msg2', true, 'Saved! Press Sync on the TV to receive it.');
+  } catch (e) { show('msg2', false, 'Save failed. Try again.'); }
+}
+</script>
+</body>
+</html>

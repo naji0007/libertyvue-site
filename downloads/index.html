@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Downloads — LibertyVue Player</title>
+<style>
+  :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:12px; padding:13px 26px; font-weight:700; font-size:15px; text-decoration:none; cursor:pointer; border:1px solid transparent; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:var(--panel); color:var(--text); border-color:var(--border); }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:34px 0 14px; }
+  h1.hero { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; max-width:640px; }
+  .sub { color:var(--muted); margin:14px 0 30px; line-height:1.7; max-width:640px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px; }
+  .card h3 { font-size:18px; margin:12px 0 6px; }
+  .card p, .card li { color:var(--muted); font-size:14px; line-height:1.7; }
+  .card ul, .card ol { margin:8px 0 0 18px; }
+  .pill { display:inline-block; background:#1A2436; color:var(--gold); font-size:12px; border-radius:20px; padding:4px 14px; margin-bottom:4px; }
+  .dl { display:inline-block; background:var(--gold); color:#191508; font-weight:800; border-radius:10px; padding:12px 22px; text-decoration:none; margin-top:14px; font-size:15px; }
+  .dl small { font-weight:400; }
+  .meta { color:var(--muted); font-size:12px; margin-top:8px; }
+  code { background:#080D15; padding:2px 8px; border-radius:6px; font-size:12px; word-break:break-all; }
+  .ar { direction:rtl; text-align:right; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:56px; line-height:2; }
+  footer a { color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk on" href="downloads.html">Downloads</a><a class="lnk" href="guides.html">Guides</a><a class="lnk" href="activate.html">Activate</a><a class="lnk" href="manage.html">Manage playlists</a><a class="lnk" href="support.html">Support</a><a class="lnk" href="login.html">Login</a>
+    <a class="btn dark" style="padding:10px 20px" href="downloads.html">TV preview</a>
+    <a class="btn gold" style="padding:10px 20px" href="activate.html">Activate device</a>
+  </nav>
+
+  <div class="eyebrow">Downloads</div>
+  <h1 class="hero">Built for the biggest screen in the room.</h1>
+  <p class="sub">Download LibertyVue Player for Android TV, Google TV and compatible Fire TV devices. Live TV, films, series and radio, with your own M3U or Xtream connection.</p>
+
+  <div class="grid">
+    <div class="card">
+      <span class="pill">v0.16.0 · Beta</span>
+      <h3>Android TV</h3>
+      <p>Google TV, Android TV boxes and compatible televisions.</p>
+      <ul><li>Change channels without leaving the player</li><li>Seven-day trial</li><li>M3U/M3U8 and Xtream Codes</li></ul>
+      <!-- VERSION: 0.16.0 official signed release -->
+      <a class="dl" href="https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-release.apk">⬇ Download APK — Official</a>
+      <div class="meta">v0.16.0 · ~21 MB · Android 6+ · Signature: EA:6E:40:1A…DE:8A</div>
+    </div>
+    <div class="card">
+      <span class="pill">v0.16.0 · Beta</span>
+      <h3>Amazon Fire TV</h3>
+      <p>Compatible Fire TV devices running Android-based Fire OS.</p>
+      <ul><li>Change channels without leaving the player</li><li>Seven-day trial</li><li>M3U/M3U8 and Xtream Codes</li></ul>
+      <a class="dl" href="https://github.com/naji0007/libertyvue-site/releases/download/v0.16.0/LibertyVue-0.16.0-release.apk">⬇ Download APK — Official</a>
+      <div class="meta">v0.16.0 · ~21 MB · Fire OS · Signature: EA:6E:40:1A…DE:8A</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Install with Downloader</h3>
+    <ol style="margin-left:18px;color:var(--muted);font-size:14px;line-height:2">
+      <li>Open <b style="color:var(--text)">Downloader</b> on your TV / Fire Stick</li>
+      <li>Type code <code>1785346</code> → <b style="color:var(--text)">Go</b> <span style="color:var(--muted)">or <code>bit.ly/libertyvue-app-download</code></span></li>
+      <li>Alternative: <code>8756456</code> / <code>bit.ly/4iBOY2X</code></li>
+      <li>Select <b style="color:var(--text)">Install</b>, allow unknown sources if asked</li>
+    </ol>
+  </div>
+
+  <div class="card ar">
+    <h3>التثبيت بـ Downloader</h3>
+    <ol><li>افتح تطبيق <b>Downloader</b></li><li>اكتب الكود <code>1785346</code> أو <code>bit.ly/libertyvue-app-download</code> ثم Go</li><li>ثبّت التطبيق واسمح بالمصادر غير المعروفة</li></ol>
+  </div>
+
+  <footer>© 2026 LibertyVue Player · No channels included · <a href="index.html">Home</a></footer>
+</div>
+</body>
+</html>
