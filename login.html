@@ -90,7 +90,15 @@ async function login() {
     const role = (p.data && p.data.role) || 'reseller';
     if (mode === 'admin' && role !== 'admin')
       return show(false, 'This account is not an admin.');
-    show(true, 'Welcome (' + role + '). Your dashboard is coming soon — manage data directly in Supabase for now.');
+    if (mode === 'reseller' && role === 'admin') {
+      location.href = 'dashboard.html';
+      return;
+    }
+    if (role === 'admin') {
+      location.href = 'dashboard.html';
+      return;
+    }
+    show(true, 'Welcome (reseller). Your space is coming soon.');
   } catch (e) {
     show(false, e.message || 'Login failed.');
   }
