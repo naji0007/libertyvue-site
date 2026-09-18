@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin dashboard — LibertyVue Player</title>
+<title>My space — LibertyVue Player</title>
 <style>
   :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -21,6 +21,7 @@
   .btn.danger { background:transparent; color:#FF7D7D; border-color:#5a2b2b; }
   .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:30px 0 12px; }
   h1.hero { font-size:clamp(28px,4vw,40px); font-weight:800; letter-spacing:-1px; }
+  .sub { color:var(--muted); margin:10px 0 8px; line-height:1.7; }
   .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:16px; }
   .card h3 { font-size:17px; margin-bottom:12px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -43,18 +44,19 @@
 <div class="wrap">
   <nav class="top">
     <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
-    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="manage.html">Manage</a><a class="lnk on" href="dashboard.html">Dashboard</a><a class="lnk" href="login.html">Login</a>
-    <a class="btn dark" href="#" id="logout" onclick="logout();return false;">Log out</a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="manage.html">Manage</a><a class="lnk on" href="reseller.html">My space</a>
+    <a class="btn dark" href="#" onclick="logout();return false;">Log out</a>
   </nav>
 
-  <div id="gate"><div class="eyebrow">Admin</div><h1 class="hero">Checking access…</h1></div>
+  <div id="gate"><div class="eyebrow">Reseller space</div><h1 class="hero">Checking access…</h1></div>
 
   <div id="app" style="display:none">
-    <div class="eyebrow">Admin dashboard</div>
-    <h1 class="hero">Devices & licences.</h1>
+    <div class="eyebrow">Reseller space</div>
+    <h1 class="hero">My devices.</h1>
+    <p class="sub">Add playlists to your customers' devices. Licence changes are done by the admin.</p>
 
     <div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
-      <thead><tr><th>Device</th><th>Licence</th><th>Expires</th><th>Reseller</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Device</th><th>Licence</th><th>Expires</th></tr></thead>
       <tbody id="devices"></tbody>
     </table></div><div class="msg" id="msgD"></div></div>
 
@@ -76,13 +78,6 @@
       <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
       <div class="msg" id="msgP"></div>
     </div>
-
-    <div class="card"><h3>Accounts</h3><div style="overflow-x:auto"><table>
-      <thead><tr><th>Email</th><th>Role</th><th></th></tr></thead>
-      <tbody id="users"></tbody>
-    </table></div><div class="msg" id="msgU"></div>
-      <p style="color:var(--muted);font-size:13px;margin-top:10px">Create accounts in Supabase → Authentication → Users, then set their role here.</p>
-    </div>
   </div>
 
   <footer>© 2026 LibertyVue Player</footer>
@@ -94,7 +89,6 @@ const sb = supabase.createClient(
   "https://zioesbhpkkcqfivtqlqt.supabase.co",
   "sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF"
 );
-const YEAR = 365 * 24 * 3600 * 1000;
 function show(id, ok, text) {
   const m = document.getElementById(id);
   m.className = 'msg ' + (ok ? 'ok' : 'err');
@@ -105,92 +99,46 @@ function esc(s) {
 }
 function fmtDate(ms) {
   if (!ms) return '—';
-  const d = new Date(Number(ms));
-  return d.toLocaleDateString('fr-FR');
+  return new Date(Number(ms)).toLocaleDateString('fr-FR');
 }
 async function logout() { await sb.auth.signOut(); location.href = 'login.html'; }
 
 async function init() {
   const s = await sb.auth.getSession();
   if (!s.data.session) { location.href = 'login.html'; return; }
-  const p = await sb.from('profiles').select('role').eq('id', s.data.session.user.id).maybeSingle();
-  if (p.error || !p.data || p.data.role !== 'admin') {
-    document.getElementById('gate').innerHTML =
-      '<div class="eyebrow">Admin</div><h1 class="hero">Not authorized.</h1><p style="color:var(--muted)">This space is for admins. <a style="color:var(--gold)" href="login.html">Log in</a> with an admin account.</p>';
-    return;
-  }
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   loadDevices();
-  loadUsers();
 }
-
 async function loadDevices() {
   const d = await sb.from('devices').select('*').order('created_at', { ascending: false });
   if (d.error) return show('msgD', false, d.error.message);
-  const l = await sb.from('licenses').select('*');
+  if (!d.data || !d.data.length) {
+    document.getElementById('devices').innerHTML =
+      '<tr><td colspan="3" style="color:var(--muted)">No devices yet. Ask the admin to assign devices to your account.</td></tr>';
+    return;
+  }
+  const ids = d.data.map(x => x.device_id);
+  const l = await sb.from('licenses').select('*').in('device_id', ids);
   const lic = {};
   (l.data || []).forEach(x => lic[x.device_id] = x);
   const tb = document.getElementById('devices');
   tb.innerHTML = '';
   const sel = document.getElementById('pdev');
   sel.innerHTML = '';
-  const users = await sb.from('profiles').select('id,email').order('email');
-  const resellers = (users.data || []);
-  (d.data || []).forEach(dev => {
+  d.data.forEach(dev => {
     const L = lic[dev.device_id];
     const st = L ? L.status : 'trial';
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div><div class="mono" style="color:var(--muted)">' + esc(dev.device_key) + '</div></td>' +
+    tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div></td>' +
       '<td><span class="pill' + (st === 'trial' ? ' trial' : '') + '">' + esc(st + (L && L.type ? ' · ' + L.type : '')) + '</span></td>' +
-      '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td><td></td><td><div class="rowbtns"></div></td>';
-    const rsel = document.createElement('select');
-    rsel.style.cssText = 'background:#0B1220;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;max-width:190px';
-    const none = document.createElement('option');
-    none.value = ''; none.textContent = '— none —';
-    rsel.appendChild(none);
-    resellers.forEach(u => {
-      const o = document.createElement('option');
-      o.value = u.id; o.textContent = u.email || u.id.slice(0, 8);
-      if (dev.reseller_id === u.id) o.selected = true;
-      rsel.appendChild(o);
-    });
-    rsel.onchange = async () => {
-      const w = await sb.from('devices').update({ reseller_id: rsel.value || null }).eq('device_id', dev.device_id);
-      if (w.error) return show('msgD', false, w.error.message);
-      show('msgD', true, 'Reseller assigned.');
-    };
-    tr.children[3].appendChild(rsel);
-    const box = tr.querySelector('.rowbtns');
-    const mk = (t, cls, fn) => {
-      const b = document.createElement('button');
-      b.className = 'btn ' + cls; b.textContent = t;
-      b.onclick = fn; box.appendChild(b);
-    };
-    mk('Lifetime', 'gold', () => setLicense(dev.device_id, 'active', 'lifetime', null, null));
-    mk('Annual', 'dark', () => setLicense(dev.device_id, 'active', 'annual', Date.now() + YEAR, 365));
-    mk('Trial', 'dark', () => setLicense(dev.device_id, 'trial', null, null, null));
-    mk('Delete', 'danger', () => delDevice(dev.device_id));
+      '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td>';
     tb.appendChild(tr);
     const o = document.createElement('option');
     o.value = dev.device_id; o.textContent = dev.device_id;
     sel.appendChild(o);
   });
   loadPlaylists();
-}
-async function setLicense(id, status, type, exp, days) {
-  const r = await sb.from('licenses').upsert(
-    { device_id: id, status, type, expires_at: exp, days_remaining: days },
-    { onConflict: 'device_id' });
-  if (r.error) return show('msgD', false, r.error.message);
-  show('msgD', true, 'Licence updated.');
-  loadDevices();
-}
-async function delDevice(id) {
-  if (!confirm('Delete device ' + id + ' and everything on it?')) return;
-  const r = await sb.from('devices').delete().eq('device_id', id);
-  if (r.error) return show('msgD', false, r.error.message);
-  loadDevices();
 }
 async function loadPlaylists() {
   const id = document.getElementById('pdev').value;
@@ -206,8 +154,8 @@ async function loadPlaylists() {
     b.className = 'btn danger'; b.textContent = 'Delete';
     b.onclick = async () => {
       if (!confirm('Delete ' + p.name + '?')) return;
-      const d = await sb.from('playlists').delete().eq('id', p.id);
-      if (d.error) return show('msgP', false, d.error.message);
+      const x = await sb.from('playlists').delete().eq('id', p.id);
+      if (x.error) return show('msgP', false, x.error.message);
       loadPlaylists();
     };
     tr.lastChild.appendChild(b);
@@ -226,34 +174,12 @@ async function addPlaylist() {
     password: document.getElementById('ppass').value,
     origin: 'REMOTE', epg_url: ''
   };
-  if (!id) return show('msgP', false, 'Choose a device first.');
+  if (!id) return show('msgP', false, 'No device.');
   if (!body.url) return show('msgP', false, 'Enter the URL.');
   const r = await sb.from('playlists').insert(body);
   if (r.error) return show('msgP', false, r.error.message);
   show('msgP', true, 'Saved. Press Sync on the TV.');
   loadPlaylists();
-}
-async function loadUsers() {
-  const r = await sb.from('profiles').select('id,email,role').order('email');
-  if (r.error) return show('msgU', false, r.error.message);
-  const tb = document.getElementById('users');
-  tb.innerHTML = '';
-  (r.data || []).forEach(u => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + esc(u.email) + '</td><td><span class="pill">' + esc(u.role || 'reseller') + '</span></td><td><div class="rowbtns"></div></td>';
-    const box = tr.querySelector('.rowbtns');
-    [['admin', 'Admin'], ['reseller', 'Reseller']].forEach(([role, label]) => {
-      const b = document.createElement('button');
-      b.className = 'btn dark'; b.textContent = label;
-      b.onclick = async () => {
-        const w = await sb.from('profiles').update({ role }).eq('id', u.id);
-        if (w.error) return show('msgU', false, w.error.message);
-        loadUsers();
-      };
-      box.appendChild(b);
-    });
-    tb.appendChild(tr);
-  });
 }
 init();
 </script>

@@ -98,7 +98,7 @@ async function login() {
       location.href = 'dashboard.html';
       return;
     }
-    show(true, 'Welcome (reseller). Your space is coming soon.');
+    location.href = 'reseller.html';
   } catch (e) {
     show(false, e.message || 'Login failed.');
   }
