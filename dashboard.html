@@ -22,6 +22,10 @@
   .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:30px 0 12px; }
   h1.hero { font-size:clamp(28px,4vw,40px); font-weight:800; letter-spacing:-1px; }
   .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:16px; }
+  .tabs { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+  .tabs button { flex:1; min-width:120px; background:var(--panel); color:var(--muted); border:1px solid var(--border); border-radius:10px; padding:12px; font-weight:700; cursor:pointer; }
+  .tabs button.on { background:var(--gold); color:#191508; border-color:var(--gold); }
+  .pane { display:none; } .pane.on { display:block; }
   .card h3 { font-size:17px; margin-bottom:12px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
   th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
@@ -52,13 +56,18 @@
   <div id="app" style="display:none">
     <div class="eyebrow">Admin dashboard</div>
     <h1 class="hero">Devices & licences.</h1>
+    <div class="tabs">
+      <button id="tDev" class="on" onclick="showTab('devices')">Devices</button>
+      <button id="tPlay" onclick="showTab('playlists')">Playlists</button>
+      <button id="tAcc" onclick="showTab('accounts')">Accounts</button>
+    </div>
 
-    <div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
+    <div id="pane-devices" class="pane on"><div class="card"><h3>Devices</h3><div style="overflow-x:auto"><table>
       <thead><tr><th>Device</th><th>Licence</th><th>Expires</th><th>Reseller</th><th>Actions</th></tr></thead>
       <tbody id="devices"></tbody>
-    </table></div><div class="msg" id="msgD"></div></div>
+    </table></div><div class="msg" id="msgD"></div></div></div>
 
-    <div class="card"><h3>Playlists</h3>
+    <div id="pane-playlists" class="pane"><div class="card"><h3>Playlists</h3>
       <label>Device</label><select id="pdev"></select>
       <div style="overflow-x:auto"><table>
         <thead><tr><th>Name</th><th>Type</th><th>URL</th><th></th></tr></thead>
@@ -76,14 +85,14 @@
       <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
       <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
       <div class="msg" id="msgP"></div>
-    </div>
+    </div></div>
 
-    <div class="card"><h3>Accounts</h3><div style="overflow-x:auto"><table>
+    <div id="pane-accounts" class="pane"><div class="card"><h3>Accounts</h3><div style="overflow-x:auto"><table>
       <thead><tr><th>Email</th><th>Role</th><th></th></tr></thead>
       <tbody id="users"></tbody>
     </table></div><div class="msg" id="msgU"></div>
       <p style="color:var(--muted);font-size:13px;margin-top:10px">Create accounts in Supabase → Authentication → Users, then set their role here.</p>
-    </div>
+    </div></div>
   </div>
 
   <footer>© 2026 LibertyVue Player</footer>
@@ -103,6 +112,12 @@ function show(id, ok, text) {
   const m = document.getElementById(id);
   m.className = 'msg ' + (ok ? 'ok' : 'err');
   m.textContent = text;
+}
+function showTab(name) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
+  document.getElementById('pane-' + name).classList.add('on');
+  document.getElementById(name === 'devices' ? 'tDev' : name === 'playlists' ? 'tPlay' : 'tAcc').classList.add('on');
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
