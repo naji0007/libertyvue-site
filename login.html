@@ -56,6 +56,11 @@
     <button class="btn gold full" onclick="login()">Log in</button>
     <p style="text-align:center;margin-top:12px"><a href="#" onclick="forgot();return false;" style="color:var(--muted);font-size:13px">Mot de passe oublié ? / Forgot password?</a></p>
     <div class="msg" id="msg"></div>
+    <div id="resetBox" style="display:none;margin-top:8px">
+      <label>New password / Nouveau mot de passe</label>
+      <input id="newpass" type="password" placeholder="••••••••">
+      <button class="btn gold full" onclick="setNewPassword()">Save new password</button>
+    </div>
   </div>
 
   <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
@@ -82,11 +87,34 @@ async function forgot() {
   const email = document.getElementById('email').value.trim();
   if (!email) return show(false, 'Enter your email first, then click this link.');
   try {
-    const r = await sb.auth.resetPasswordForEmail(email);
+    const r = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://naji0007.github.io/libertyvue-site/login.html'
+    });
     if (r.error) throw r.error;
     show(true, 'Reset link sent. Check your inbox (and spam).');
   } catch (e) {
     show(false, e.message || 'Could not send reset link.');
+  }
+}
+// Incoming password-recovery link: show the new-password form.
+(function () {
+  const hash = window.location.hash || '';
+  if (hash.indexOf('type=recovery') >= 0) {
+    document.getElementById('resetBox').style.display = 'block';
+    show(true, 'Choose your new password below.');
+  }
+})();
+async function setNewPassword() {
+  const pw = document.getElementById('newpass').value;
+  if (!pw || pw.length < 6) return show(false, 'Password must be at least 6 characters.');
+  try {
+    const r = await sb.auth.updateUser({ password: pw });
+    if (r.error) throw r.error;
+    document.getElementById('resetBox').style.display = 'none';
+    window.location.hash = '';
+    show(true, 'Password updated. Log in with the new one.');
+  } catch (e) {
+    show(false, e.message || 'Update failed. Request a new link.');
   }
 }
 async function login() {
