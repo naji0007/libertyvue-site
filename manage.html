@@ -65,6 +65,7 @@
       <label>Username</label><input id="puser" placeholder="Identifiant">
       <label>Password</label><input id="ppass" type="password" placeholder="Mot de passe">
     </div>
+    <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
     <button class="btn gold full" onclick="addPlaylist()">Save to device</button>
     <div class="msg" id="msg2"></div>
   </div>
@@ -110,7 +111,7 @@ async function addPlaylist() {
     p_url: document.getElementById('purl').value.trim(),
     p_username: document.getElementById('puser').value.trim(),
     p_password: document.getElementById('ppass').value,
-    p_epg_url: ''
+    p_epg_url: document.getElementById('pepg').value.trim()
   };
   if (!body.p_url) return show('msg2', false, 'Enter the URL.');
   if (body.p_type === 'XTREAM' && (!body.p_username || !body.p_password))

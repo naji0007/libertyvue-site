@@ -73,6 +73,7 @@
         <div><label>Username (Xtream)</label><input id="puser"></div>
         <div><label>Password (Xtream)</label><input id="ppass" type="password"></div>
       </div>
+      <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
       <button class="btn gold" style="margin-top:14px" onclick="addPlaylist()">Add playlist</button>
       <div class="msg" id="msgP"></div>
     </div>
@@ -224,7 +225,7 @@ async function addPlaylist() {
     url: document.getElementById('purl').value.trim(),
     username: document.getElementById('puser').value.trim(),
     password: document.getElementById('ppass').value,
-    origin: 'REMOTE', epg_url: ''
+    origin: 'REMOTE', epg_url: document.getElementById('pepg').value.trim()
   };
   if (!id) return show('msgP', false, 'Choose a device first.');
   if (!body.url) return show('msgP', false, 'Enter the URL.');
