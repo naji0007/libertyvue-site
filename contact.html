@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — LibertyVue Player</title>
+<style>
+  :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 60px; }
+  nav.top { display:flex; align-items:center; gap:6px; padding:18px 0; flex-wrap:wrap; }
+  .logo { display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text); }
+  .logo .mark { width:42px; height:42px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; color:#191508; font-size:20px; }
+  .logo b { font-size:17px; display:block; line-height:1.1; } .logo span { font-size:9px; letter-spacing:3px; color:var(--gold); }
+  nav.top a.lnk { color:var(--muted); text-decoration:none; font-size:14px; padding:9px 13px; border-radius:9px; }
+  nav.top a.lnk:hover, nav.top a.lnk.on { color:var(--text); background:var(--panel); }
+  .btn { display:inline-block; border-radius:12px; padding:13px 26px; font-weight:700; font-size:15px; text-decoration:none; cursor:pointer; border:1px solid transparent; }
+  .btn.gold { background:var(--gold); color:#191508; }
+  .btn.dark { background:var(--panel); color:var(--text); border-color:var(--border); }
+  .eyebrow { color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:34px 0 14px; }
+  h1.hero { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; max-width:640px; }
+  .sub { color:var(--muted); margin:14px 0 28px; line-height:1.7; max-width:640px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px; }
+  .card h3 { font-size:16px; margin-bottom:8px; }
+  .card p, .card li { color:var(--muted); font-size:14px; line-height:1.7; }
+  input, textarea { width:100%; background:#0B1220; border:1px solid var(--border); color:var(--text); border-radius:10px; padding:12px; font-size:14px; margin-top:6px; }
+  label { font-size:12px; font-weight:600; display:block; margin-top:14px; color:var(--muted); }
+  textarea { min-height:120px; resize:vertical; }
+  .msg { margin-top:12px; font-size:13px; padding:10px; border-radius:10px; display:none; }
+  .msg.ok { display:block; background:#0E2A1A; color:#7BD88F; }
+  .msg.err { display:block; background:#2A1414; color:#FF7D7D; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:56px; line-height:2; }
+  footer a { color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="mark">LV</span><span><b>LibertyVue</b><span>PLAYER</span></span></a>
+    <a class="lnk" href="downloads.html">Downloads</a><a class="lnk" href="guides.html">Guides</a><a class="lnk" href="activate.html">Activate</a><a class="lnk" href="manage.html">Manage playlists</a><a class="lnk" href="support.html">Support</a><a class="lnk on" href="contact.html">Contact</a>
+    <a class="btn dark" style="padding:10px 20px" href="downloads.html">TV preview</a>
+    <a class="btn gold" style="padding:10px 20px" href="activate.html">Activate device</a>
+  </nav>
+
+  <div class="eyebrow">Contact</div>
+  <h1 class="hero">Tell us what is happening on your screen.</h1>
+  <p class="sub">Include your device model and the exact error message. Never send playlist passwords or card information.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Email support</h3>
+        <p>Send a message from this page and it will be delivered to the LibertyVue support inbox.</p>
+        <p style="margin-top:10px"><a href="mailto:libertyvueplayer@libertyvueplayer.online" style="color:var(--gold)">libertyvueplayer@libertyvueplayer.online</a></p>
+      </div>
+      <div class="card"><h3>Faster diagnosis</h3><p>Send the TV brand, model, app version and a photo of the error without exposing playlist URL. We usually reply within 24h.</p></div>
+    </div>
+    <div class="card">
+      <h3>Send a message</h3>
+      <form id="contactForm" onsubmit="return send(event)">
+        <label>Name</label><input id="cname" required>
+        <label>Email</label><input id="cemail" type="email" required>
+        <label>Subject</label><input id="csubject" placeholder="Example: App does not refresh" required>
+        <label>Message</label><textarea id="cmessage" placeholder="Device model, app version and error message..." required></textarea>
+        <button class="btn gold" style="width:100%;margin-top:16px" type="submit">Send message</button>
+        <div class="msg" id="cmsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <footer>© 2026 LibertyVue Player · <a href="index.html">Home</a></footer>
+</div>
+
+<script>
+function show(ok, text) {
+  const m = document.getElementById('cmsg');
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  m.textContent = text;
+}
+async function send(e) {
+  e.preventDefault();
+  const body = {
+    name: document.getElementById('cname').value.trim(),
+    email: document.getElementById('cemail').value.trim(),
+    subject: document.getElementById('csubject').value.trim(),
+    message: document.getElementById('cmessage').value.trim()
+  };
+  if (!body.name || !body.email || !body.subject || !body.message) return show(false, 'Fill all fields.');
+  show(true, 'Sending…');
+  try {
+    const r = await fetch('https://formspree.io/f/mvgqakkr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error();
+    show(true, 'Message sent — we will reply within 24h.');
+    document.getElementById('contactForm').reset();
+  } catch {
+    // Fallback to mailto if Formspree not configured
+    location.href = 'mailto:libertyvueplayer@libertyvueplayer.online?subject=' + encodeURIComponent(body.subject) + '&body=' + encodeURIComponent(body.message + '\n\nFrom: ' + body.name + ' <' + body.email + '>');
+    show(true, 'Opening your email app…');
+  }
+}
+</script>
+</body>
+</html>
