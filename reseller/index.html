@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>My space — LibertyVue Player</title>
 <style>
   :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
@@ -39,6 +40,7 @@
   .msg.err { display:block; background:#2A1414; color:#FF7D7D; }
   footer { color:var(--muted); font-size:12px; text-align:center; margin-top:48px; }
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div class="wrap">
@@ -190,7 +192,7 @@ async function loadDevices() {
     const L = lic[dev.device_id];
     const st = L ? L.status : 'trial';
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div></td>' +
+    tr.innerHTML = '<td><div class="mono">' + esc(dev.device_id) + '</div><div class="mono" style="color:var(--muted)">' + esc(dev.device_key) + '</div></td>' +
       '<td><span class="pill' + (st === 'trial' ? ' trial' : '') + '">' + esc(st + (L && L.type ? ' · ' + L.type : '')) + '</span></td>' +
       '<td>' + esc(L && L.expires_at ? fmtDate(L.expires_at) : '—') + '</td><td><div class="rowbtns"></div></td>';
     const box = tr.querySelector('.rowbtns');
@@ -270,5 +272,6 @@ async function addPlaylist() {
 }
 init();
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

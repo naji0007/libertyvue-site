@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>Admin dashboard — LibertyVue Player</title>
 <style>
   :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
@@ -42,6 +43,7 @@
   .msg.err { display:block; background:#2A1414; color:#FF7D7D; }
   footer { color:var(--muted); font-size:12px; text-align:center; margin-top:48px; }
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div class="wrap">
@@ -325,5 +327,6 @@ async function loadUsers() {
 }
 init();
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

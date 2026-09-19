@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Connect your LibertyVue Player device and securely manage your authorised M3U or Xtream playlist.">
+<meta name="robots" content="noindex,nofollow"><link rel="canonical" href="https://libertyvueplayer.online/manage.html">
 <title>Manage playlists — LibertyVue Player</title>
 <style>
   :root { --bg:#060A12; --panel:#101724; --gold:#E8B64A; --text:#F5F7FA; --muted:#98A4B5; --border:#1F2A3D; }
@@ -33,6 +35,7 @@
   footer { color:var(--muted); font-size:12px; text-align:center; margin-top:48px; }
   footer a { color:var(--gold); }
 </style>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div class="wrap">
@@ -56,6 +59,11 @@
   </div>
 
   <div class="card hidden" id="step2">
+    <div id="existingWrap" class="hidden" style="margin-bottom:28px">
+      <h3>Your playlists</h3>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px">Edit or remove a playlist, then press Sync in the TV app.</p>
+      <div id="existingList" style="display:grid;gap:10px;margin-top:16px"></div>
+    </div>
     <h3>Add a playlist</h3>
     <label>Type</label>
     <select id="ptype"><option value="M3U">M3U / M3U8</option><option value="XTREAM">Xtream Codes</option></select>
@@ -66,7 +74,8 @@
       <label>Password</label><input id="ppass" type="password" placeholder="Mot de passe">
     </div>
     <label>EPG / XMLTV URL (optional)</label><input id="pepg" placeholder="https://…/guide.xml">
-    <button class="btn gold full" onclick="addPlaylist()">Save to device</button>
+    <button class="btn gold full" id="saveBtn" onclick="addPlaylist()">Save to device</button>
+    <button class="btn dark full hidden" id="cancelBtn" onclick="cancelEdit()">Cancel editing</button>
     <div class="msg" id="msg2"></div>
   </div>
 
@@ -82,13 +91,30 @@ try {
   if (typeof supabase !== 'undefined') sb = supabase.createClient(URL, KEY);
 } catch (e) { sb = null; }
 function needLib() {
-  if (!sb) {
-    show('msg1', false, 'Library blocked (adblock/VPN?). Disable it for this page and reload.');
-    return false;
-  }
   return true;
 }
+async function rpc(name, body) {
+  if (sb) return sb.rpc(name, body);
+  try {
+    const response = await fetch(URL + '/rest/v1/rpc/' + name, {
+      method: 'POST',
+      headers: {
+        'apikey': KEY,
+        'Authorization': 'Bearer ' + KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) return { data: null, error: { message: (data && (data.message || data.hint)) || 'HTTP ' + response.status } };
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
 let dev = null;
+let currentPlaylists = [];
+let editingId = null;
 document.getElementById('ptype').addEventListener('change', e => {
   document.getElementById('xfields').classList.toggle('hidden', e.target.value !== 'XTREAM');
 });
@@ -97,6 +123,59 @@ function show(id, ok, text) {
   m.className = 'msg ' + (ok ? 'ok' : 'err');
   m.textContent = text;
 }
+function esc(value) {
+  return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+function renderPlaylists(playlists) {
+  currentPlaylists = Array.isArray(playlists) ? playlists : [];
+  const wrap = document.getElementById('existingWrap');
+  const list = document.getElementById('existingList');
+  list.innerHTML = '';
+  wrap.classList.toggle('hidden', currentPlaylists.length === 0);
+  currentPlaylists.forEach(p => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#0B1220;border:1px solid var(--border);border-radius:12px;padding:14px';
+    row.innerHTML = '<div style="flex:1;min-width:180px"><b>' + esc(p.name || 'Playlist') + '</b><div style="color:var(--muted);font-size:12px;margin-top:4px">' + esc(p.type || 'M3U') + ' · ' + esc(p.url || '') + '</div></div>';
+    const edit = document.createElement('button');
+    edit.className = 'btn dark'; edit.textContent = 'Edit'; edit.onclick = () => startEdit(p);
+    const del = document.createElement('button');
+    del.className = 'btn danger'; del.textContent = 'Delete'; del.onclick = () => deletePlaylist(p.id);
+    row.append(edit, del); list.appendChild(row);
+  });
+}
+function startEdit(p) {
+  editingId = p.id;
+  document.getElementById('ptype').value = p.type === 'XTREAM' ? 'XTREAM' : 'M3U';
+  document.getElementById('pname').value = p.name || '';
+  document.getElementById('purl').value = p.url || '';
+  document.getElementById('puser').value = p.username || '';
+  document.getElementById('ppass').value = p.password || '';
+  document.getElementById('pepg').value = p.epg_url || '';
+  document.getElementById('xfields').classList.toggle('hidden', p.type !== 'XTREAM');
+  document.getElementById('saveBtn').textContent = 'Update playlist';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  document.getElementById('pname').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function cancelEdit() {
+  editingId = null;
+  ['pname','purl','puser','ppass','pepg'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ptype').value = 'M3U';
+  document.getElementById('xfields').classList.add('hidden');
+  document.getElementById('saveBtn').textContent = 'Save to device';
+  document.getElementById('cancelBtn').classList.add('hidden');
+}
+async function refreshPlaylists() {
+  const r = await rpc('sync_device', { p_device_id: dev.id, p_device_key: dev.key });
+  if (!r.error && r.data && !r.data.error) renderPlaylists(r.data.playlists || []);
+}
+async function deletePlaylist(id) {
+  if (!confirm('Delete this playlist from the device?')) return;
+  const r = await rpc('delete_playlist', { p_device_id: dev.id, p_device_key: dev.key, p_playlist_id: id });
+  if (r.error || (r.data && r.data.error)) return show('msg2', false, 'Delete failed. Check the device codes.');
+  if (editingId === id) cancelEdit();
+  await refreshPlaylists();
+  show('msg2', true, 'Playlist deleted. Press Sync on the TV.');
+}
 async function connect() {
   if (!needLib()) return;
   const id = document.getElementById('deviceId').value.trim();
@@ -104,12 +183,27 @@ async function connect() {
   if (!id || !key) return show('msg1', false, 'Enter Device ID and Key.');
   show('msg1', true, 'Connecting…');
   try {
-    const r = await sb.rpc('sync_device', { p_device_id: id, p_device_key: key });
+    const r = await rpc('sync_device', { p_device_id: id, p_device_key: key });
     if (r.error) return show('msg1', false, 'Server: ' + (r.error.message || r.error.code || 'unknown'));
     if (r.data && r.data.error === 'forbidden') return show('msg1', false, 'Device not recognized. Check ID and key.');
     dev = { id, key };
+    renderPlaylists((r.data && r.data.playlists) || []);
+    let accountMessage = '';
+    if (sb) {
+      const session = await sb.auth.getSession();
+      if (session.data && session.data.session) {
+        const claim = await sb.rpc('claim_device', { p_device_id: id, p_device_key: key });
+        if (!claim.error && (!claim.data || claim.data.ok || claim.data.success)) {
+          accountMessage = ' The device is now linked to your reseller account.';
+        } else if (claim.data && claim.data.error === 'already_assigned') {
+          accountMessage = ' This device belongs to another reseller account.';
+        } else if (claim.data && claim.data.ok === 'already_yours') {
+          accountMessage = ' This device is already linked to your account.';
+        }
+      }
+    }
     document.getElementById('step2').classList.remove('hidden');
-    show('msg1', true, 'Connected. Add your playlist below, then press Sync on the TV.');
+    show('msg1', true, 'Connected.' + accountMessage + ' Add your playlist below, then press Sync on the TV.');
   } catch (e) { show('msg1', false, 'Network: ' + (e.message || e)); }
 }
 async function addPlaylist() {
@@ -126,12 +220,17 @@ async function addPlaylist() {
   if (body.p_type === 'XTREAM' && (!body.p_username || !body.p_password))
     return show('msg2', false, 'Xtream needs username + password.');
   try {
-    const r = await sb.rpc('add_playlist', body);
+    const action = editingId ? 'update_playlist' : 'add_playlist';
+    if (editingId) body.p_playlist_id = editingId;
+    const r = await rpc(action, body);
     if (r.error) throw r.error;
     if (r.data && r.data.error) return show('msg2', false, 'Rejected. Check device codes.');
+    cancelEdit();
+    await refreshPlaylists();
     show('msg2', true, 'Saved! Press Sync on the TV to receive it.');
   } catch (e) { show('msg2', false, 'Save failed. Try again.'); }
 }
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

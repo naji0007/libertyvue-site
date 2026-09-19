@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /reseller.html
+Disallow: /login.html
+Disallow: /manage.html
+
+Sitemap: https://libertyvueplayer.online/sitemap.xml
