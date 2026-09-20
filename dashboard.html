@@ -246,8 +246,11 @@ async function loadPlaylists() {
     b.className = 'btn danger'; b.textContent = 'Delete';
     b.onclick = async () => {
       if (!confirm('Delete ' + p.name + '?')) return;
-      const d = await sb.from('playlists').delete().eq('id', p.id);
-      if (d.error) return show('msgP', false, d.error.message);
+      const devId = document.getElementById('pdev').value;
+      const devRow = await sb.from('devices').select('device_key').eq('device_id', devId).single();
+      if (devRow.error) return show('msgP', false, devRow.error.message);
+      const d = await sb.rpc('delete_playlist', { p_device_id: devId, p_device_key: devRow.data.device_key, p_playlist_id: p.id });
+      if (d.error || (d.data && d.data.error)) return show('msgP', false, (d.error && d.error.message) || d.data.error);
       loadPlaylists();
     };
     tr.lastChild.appendChild(b);
@@ -269,20 +272,23 @@ updateTypeUI();
 async function addPlaylist() {
   const id = document.getElementById('pdev').value;
   const isXt = document.getElementById('ptype').value === 'XTREAM';
-  const body = {
-    device_id: id,
-    name: document.getElementById('pname').value.trim() || 'Playlist',
-    type: document.getElementById('ptype').value,
-    url: document.getElementById('purl').value.trim(),
-    username: isXt ? document.getElementById('puser').value.trim() : '',
-    password: isXt ? document.getElementById('ppass').value : '',
-    origin: 'REMOTE', epg_url: isXt ? '' : document.getElementById('pepg').value.trim()
-  };
   if (!id) return show('msgP', false, 'Choose a device first.');
-  if (!body.url) return show('msgP', false, 'Enter the URL.');
-  if (isXt && (!body.username || !body.password)) return show('msgP', false, 'Xtream needs username + password.');
-  const r = await sb.from('playlists').insert(body);
+  const url = document.getElementById('purl').value.trim();
+  if (!url) return show('msgP', false, 'Enter the URL.');
+  const username = isXt ? document.getElementById('puser').value.trim() : '';
+  const password = isXt ? document.getElementById('ppass').value : '';
+  if (isXt && (!username || !password)) return show('msgP', false, 'Xtream needs username + password.');
+  const devRow = await sb.from('devices').select('device_key').eq('device_id', id).single();
+  if (devRow.error || !devRow.data) return show('msgP', false, 'Device not found.');
+  const r = await sb.rpc('add_playlist', {
+    p_device_id: id, p_device_key: devRow.data.device_key,
+    p_name: document.getElementById('pname').value.trim() || 'Playlist',
+    p_type: document.getElementById('ptype').value,
+    p_url: url, p_username: username, p_password: password,
+    p_epg_url: isXt ? '' : document.getElementById('pepg').value.trim()
+  });
   if (r.error) return show('msgP', false, r.error.message);
+  if (r.data && r.data.error) return show('msgP', false, r.data.error);
   show('msgP', true, 'Saved. Press Sync on the TV.');
   loadPlaylists();
 }
