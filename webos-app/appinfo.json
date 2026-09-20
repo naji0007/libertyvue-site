@@ -1,0 +1,21 @@
+{
+  "id": "com.libertyvue.player",
+  "version": "0.16.0",
+  "vendor": "LibertyVue",
+  "title": "LibertyVue Player",
+  "type": "web",
+  "main": "index.html",
+  "icon": "icon/icon.png",
+  "largeIcon": "icon/largeIcon.png",
+  "splash": "icon/splash.png",
+  "bgColor": "#05070c",
+  "display": "fullscreen",
+  " resizable": false,
+  "lockOrientation": true,
+  "oneLetterId": "L",
+  "requiredACG": [],
+  "features": [
+    "webapp",
+    "internet"
+  ]
+}
