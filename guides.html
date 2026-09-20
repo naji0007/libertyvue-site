@@ -54,6 +54,21 @@
 
   <div class="grid">
     <div class="card"><span class="tag">ANDROID / FIRE</span><div class="chip">▣</div><h3>Install on TV & Fire Stick</h3><p>Install the APK directly or via Downloader, open the app and connect an authorised playlist.</p><ol><li>Download from the <a href="downloads.html" style="color:var(--gold)">download page</a></li><li>Allow unknown sources, install</li><li>Add M3U or Xtream, refresh</li></ol></div>
+    <div class="card"><span class="tag">LG webOS</span><div class="chip">◎</div><h3>Install on LG Smart TV</h3><p>Install LibertyVue Player on LG webOS 4+ via WiFi from your PC. Requires Developer Mode on the TV.</p>
+      <ol>
+        <li><b style="color:var(--text)">Enable Developer Mode</b> — On your LG TV: Settings → General → About TV → click <b style="color:var(--text)">"webOS TV version"</b> <b style="color:var(--gold)">7 times</b> → Developer Mode will activate</li>
+        <li><b style="color:var(--text)">Restart TV</b> — Turn off and on again</li>
+        <li><b style="color:var(--text)">Get TV IP address</b> — Settings → General → About TV → Network → note the IP (e.g. <code>192.168.1.50</code>)</li>
+        <li><b style="color:var(--text)">On your PC, open terminal and run:</b>
+          <div style="background:#080D15;padding:10px 14px;border-radius:8px;margin:8px 0;font-family:monospace;font-size:13px;color:#57d987">
+            npm install -g @webos-tools/cli<br>
+            ares install 192.168.1.50 com.libertyvue.player_0.16.0_all.ipk
+          </div>
+        </li>
+        <li><b style="color:var(--text)">Open LibertyVue</b> — Find it on your LG Home screen</li>
+      </ol>
+      <a class="go" href="downloads.html">Download IPK →</a>
+    </div>
     <div class="card"><span class="tag">PLAYLIST FORMATS</span><div class="chip">≣</div><h3>M3U or Xtream Codes</h3><p>Choose the right connection method and keep your playlist credentials private.</p><ul><li><b style="color:var(--text)">M3U</b> — one link, simplest</li><li><b style="color:var(--text)">Xtream</b> — server + login, faster + EPG</li></ul></div>
     <div class="card"><span class="tag">WHILE WATCHING</span><div class="chip">◎</div><h3>Remote shortcuts</h3><p>CH +/− or arrows zap without leaving playback. OK opens categories and the channel list. Back returns to the library.</p></div>
   </div>
