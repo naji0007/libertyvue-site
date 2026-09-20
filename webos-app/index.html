@@ -1,175 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>LibertyVue Player</title>
 <style>
-:root{--bg:#05070c;--panel:#0e1623;--card:#131f30;--gold:#f0bd4e;--gold2:#ffe09a;--text:#f8fafc;--muted:#8899b0;--border:#1e2d44;--focus:0 0 0 3px rgba(240,189,79,.45)}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
-body{display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(14,22,35,.92);border-bottom:1px solid var(--border);flex-shrink:0}
-.topbar .logo{font-weight:900;font-size:18px;letter-spacing:-.5px}.topbar .logo em{font-style:normal;color:var(--gold)}
-.topbar .sep{width:1px;height:24px;background:var(--border)}
-.topbar .clk{color:var(--muted);font-size:13px;margin-left:auto}
-.topbar .conn{display:flex;align-items:center;gap:8px}
-.topbar .conn input{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;width:120px}
-.topbar .conn input:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
-.topbar .conn .btn{background:var(--gold);color:#191508;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
-.topbar .conn .btn:hover{opacity:.88}
-.topbar .conn .btn.sec{background:var(--card);color:var(--text);border:1px solid var(--border)}
-.topbar .licence-badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700}
-.topbar .licence-badge.active{background:#102c20;color:#57d987}
-.topbar .licence-badge.trial{background:#2c2410;color:var(--gold)}
-.topbar .licence-badge.expired{background:#2c1010;color:#ff7f87}
-.main{display:flex;flex:1;overflow:hidden}
-.sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
-.sidebar .section-label{padding:14px 16px 6px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700}
-.sidebar .cat{padding:10px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:0;transition:background .15s}
-.sidebar .cat:hover,.sidebar .cat.active{background:rgba(255,255,255,.06);color:var(--text)}
-.sidebar .cat.active{border-left:3px solid var(--gold);padding-left:13px}
-.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.tabs{display:flex;gap:2px;padding:10px 20px;background:rgba(14,22,35,.6);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
-.tab:hover{background:rgba(255,255,255,.05);color:var(--text)}
-.tab.active{background:var(--gold);color:#191508}
-.grid-wrap{flex:1;overflow-y:auto;padding:16px 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.ch-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s}
-.ch-card:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
-.ch-card:hover{transform:translateY(-3px);border-color:rgba(240,189,79,.3)}
-.ch-card .thumb{height:120px;background:linear-gradient(135deg,#162033,#0d1520);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.ch-card .thumb img{width:100%;height:100%;object-fit:cover}
-.ch-card .thumb .fallback{font-size:32px;font-weight:900;color:var(--gold);opacity:.5}
-.ch-card .info{padding:10px 12px}
-.ch-card .info h4{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ch-card .info span{font-size:11px;color:var(--muted)}
-.player-overlay{position:fixed;inset:0;background:#000;z-index:100;display:none}
-.player-overlay.show{display:flex;flex-direction:column}
-.player-overlay .player-top{display:flex;align-items:center;gap:12px;padding:14px 24px;background:rgba(0,0,0,.7);position:absolute;top:0;left:0;right:0;z-index:2}
-.player-overlay .player-top .now-title{font-size:16px;font-weight:700;flex:1}
-.player-overlay .player-top .close-btn{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
-.player-overlay video{width:100%;height:100%;object-fit:contain;background:#000}
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:16px}
-.empty-state .icon{font-size:48px;opacity:.4}
-.empty-state p{font-size:15px}
-.sync-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center}
-.sync-modal .box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:440px;width:90%}
-.sync-modal h2{font-size:20px;margin-bottom:6px}
-.sync-modal p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px}
-.sync-modal label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;margin-top:12px}
-.sync-modal input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font-size:14px}
-.sync-modal input:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
-.sync-modal .actions{display:flex;gap:10px;margin-top:24px}
-.sync-modal .btn{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px;border:none;cursor:pointer;text-align:center}
-.sync-modal .btn.primary{background:var(--gold);color:#191508}
-.sync-modal .btn.secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
-.status-bar{display:flex;align-items:center;gap:12px;padding:6px 20px;background:rgba(14,22,35,.8);border-top:1px solid var(--border);font-size:12px;color:var(--muted);flex-shrink:0}
-.status-bar .dot{width:8px;height:8px;border-radius:50%;background:#ff7f87}
-.status-bar .dot.on{background:#57d987}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#05070c}
+iframe{width:100%;height:100%;border:none}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <span class="logo"><em>Liberty</em>Vue Player</span>
-  <span class="sep"></span>
-  <div class="conn">
-    <input id="deviceIdIn" placeholder="Device ID" spellcheck="false">
-    <input id="deviceKeyIn" placeholder="Device Key" type="password" spellcheck="false" style="width:100px">
-    <button class="btn" onclick="doSync()">Sync</button>
-    <button class="btn sec" onclick="showAddLocal()">+ Local M3U</button>
-  </div>
-  <span id="licenceBadge" class="licence-badge trial" style="display:none"></span>
-  <span class="clk" id="clock"></span>
-</div>
-<div class="main">
-  <div class="sidebar" id="sidebar">
-    <div class="section-label">Categories</div>
-    <div class="cat active" data-cat="all" onclick="filterCat('all')">All Channels</div>
-  </div>
-  <div class="content">
-    <div class="tabs">
-      <div class="tab active" data-tab="live" onclick="switchTab('live')">Live TV</div>
-      <div class="tab" data-tab="movies" onclick="switchTab('movies')">Movies</div>
-      <div class="tab" data-tab="series" onclick="switchTab('series')">Series</div>
-    </div>
-    <div class="grid-wrap" id="gridWrap">
-      <div class="empty-state" id="emptyState">
-        <div class="icon">📡</div>
-        <p>Connect your device or add a local M3U playlist</p>
-      </div>
-      <div class="grid" id="grid" style="display:none"></div>
-    </div>
-  </div>
-</div>
-<div class="status-bar">
-  <span class="dot" id="statusDot"></span>
-  <span id="statusText">Not connected</span>
-  <span id="channelCount" style="margin-left:auto"></span>
-</div>
-<div class="player-overlay" id="playerOverlay">
-  <div class="player-top">
-    <span class="now-title" id="nowTitle"></span>
-    <button class="close-btn" onclick="stopPlayer()">&#x2715;</button>
-  </div>
-  <video id="videoPlayer" controls autoplay></video>
-</div>
-<div class="sync-modal" id="syncModal" style="display:none">
-  <div class="box">
-    <h2>Add Local M3U Playlist</h2>
-    <p>Paste your M3U file URL below to load channels directly.</p>
-    <label>Playlist URL</label>
-    <input id="localM3uUrl" placeholder="http://example.com/playlist.m3u">
-    <div class="actions">
-      <button class="btn secondary" onclick="closeAddLocal()">Cancel</button>
-      <button class="btn primary" onclick="loadLocalM3u()">Load</button>
-    </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<iframe src="https://libertyvueplayer.online/tv.html" allowfullscreen></iframe>
 <script>
-const SB_URL='https://zioesbhpkkcqfivtqlqt.supabase.co';
-const SB_KEY='sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF';
-let allChannels=[],currentTab='live',currentCat='all',hls=null;
-function updateClock(){var d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
-setInterval(updateClock,10000);updateClock();
-var savedDeviceId=localStorage.getItem('lv_device_id')||'';
-var savedDeviceKey=localStorage.getItem('lv_device_key')||'';
-document.getElementById('deviceIdIn').value=savedDeviceId;
-document.getElementById('deviceKeyIn').value=savedDeviceKey;
-async function sbRpc(n,p){var r=await fetch(SB_URL+'/rest/v1/rpc/'+n,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify(p)});return r.json()}
-async function doSync(){
-  var di=document.getElementById('deviceIdIn').value.trim();
-  var dk=document.getElementById('deviceKeyIn').value.trim();
-  if(!di||!dk){alert('Enter Device ID and Device Key');return}
-  localStorage.setItem('lv_device_id',di);localStorage.setItem('lv_device_key',dk);
-  try{var d=await sbRpc('sync_device',{p_device_id:di,p_device_key:dk});
-    if(d.error){setStatus(false,'Sync failed: '+d.error);return}
-    setStatus(true,'Connected');
-    if(d.license)updateLicenceBadge(d.license);
-    if(d.playlists)await loadPlaylists(d.playlists);
-  }catch(e){setStatus(false,'Network error')}}
-function setStatus(on,t){document.getElementById('statusDot').className='dot'+(on?' on':'');document.getElementById('statusText').textContent=t}
-function updateLicenceBadge(lic){var b=document.getElementById('licenceBadge');b.style.display='inline-block';b.className='licence-badge '+(lic.status==='active'?'active':'trial');if(lic.status==='active'){b.textContent=lic.type==='lifetime'?'LIFETIME':lic.daysRemaining?lic.daysRemaining+'d left':'ACTIVE'}else{b.textContent=lic.daysRemaining?lic.daysRemaining+'d trial':'TRIAL'}}
-async function loadPlaylists(ps){allChannels=[];for(var i=0;i<ps.length;i++){var pl=ps[i];try{if(pl.type==='M3U'||pl.type==='m3u'){var ch=await parseM3U(pl.url);ch.forEach(function(c){c.category=c.category||'Uncategorized';c.source=pl.name});allChannels.push.apply(allChannels,ch)}else if(pl.type==='XTREAM'||pl.type==='xtream'){var ch2=await loadXtream(pl.url||pl.server,pl.username,pl.password);allChannels.push.apply(allChannels,ch2)}}catch(e){console.warn('Playlist error',pl.name,e)}}dedup();renderAll()}
-async function parseM3U(url){var r=await fetch(url);var t=await r.text();var lines=t.split('\n');var chs=[];for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l.startsWith('#EXTINF:')){var nm=l.match(/,(.+)$/);var name=nm?nm[1].trim():'Unknown';var lg=l.match(/tvg-logo="([^"]*)"/i);var logo=lg?lg[1]:'';var ct=l.match(/group-title="([^"]*)"/i);var cat=ct?ct[1]:'Uncategorized';var su='';if(i+1<lines.length&&!lines[i+1].trim().startsWith('#')){su=lines[i+1].trim()}if(su)chs.push({name:name,logo:logo,category:cat,url:su,type:'live'})}}return chs}
-async function loadXtream(server,user,pass){if(!server)return[];var base=server.replace(/\/$/,'');var liveChannels=[],movieChannels=[],seriesChannels=[];try{var liveRes=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_live_categories').then(function(r){return r.json()}).catch(function(){return[]});for(var i=0;i<(liveRes||[]).length;i++){var cat=liveRes[i];var streams=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_live_streams&category_id='+cat.category_id).then(function(r){return r.json()}).catch(function(){return[]});for(var j=0;j<(streams||[]).length;j++){var s=streams[j];liveChannels.push({name:s.name,logo:s.stream_icon||'',category:cat.category_name||'Live',url:base+'/live/'+user+'/'+pass+'/'+s.stream_id+'.m3u8',type:'live'})}}
-var movieRes=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_vod_categories').then(function(r){return r.json()}).catch(function(){return[]});for(var i=0;i<(movieRes||[]).length;i++){var cat=movieRes[i];var streams=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_vod_streams&category_id='+cat.category_id).then(function(r){return r.json()}).catch(function(){return[]});for(var j=0;j<(streams||[]).length;j++){var s=streams[j];movieChannels.push({name:s.name,logo:s.stream_icon||'',category:cat.category_name||'Movies',url:base+'/movie/'+user+'/'+pass+'/'+s.stream_id+'.'+(s.container_extension||'mp4'),type:'movie'})}}
-var seriesRes=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_series_categories').then(function(r){return r.json()}).catch(function(){return[]});for(var i=0;i<(seriesRes||[]).length;i++){var cat=seriesRes[i];var seriesList=await fetch(base+'/player_api.php?username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&action=get_series&category_id='+cat.category_id).then(function(r){return r.json()}).catch(function(){return[]});for(var j=0;j<(seriesList||[]).length;j++){var s=seriesList[j];if(s.series_id&&s.cover){seriesChannels.push({name:s.name,logo:s.cover||'',category:cat.category_name||'Series',url:'',type:'series',seriesId:s.series_id})}}}}catch(e){console.warn('Xtream error',e)}return liveChannels.concat(movieChannels).concat(seriesChannels)}
-function dedup(){var seen={};allChannels=allChannels.filter(function(c){var key=c.url||c.name;if(seen[key])return false;seen[key]=true;return true})}
-function renderAll(){renderGrid();renderSidebar()}
-function renderSidebar(){var cats=new Set(allChannels.filter(function(c){return c.type===currentTab}).map(function(c){return c.category}));var sb=document.getElementById('sidebar');sb.innerHTML='<div class="section-label">Categories</div>';var allBtn=document.createElement('div');allBtn.className='cat'+(currentCat==='all'?' active':'');allBtn.dataset.cat='all';allBtn.textContent='All '+(currentTab==='live'?'Channels':currentTab==='movies'?'Movies':'Series');allBtn.onclick=function(){filterCat('all')};sb.appendChild(allBtn);Array.from(cats).sort().forEach(function(cat){var d=document.createElement('div');d.className='cat'+(currentCat===cat?' active':'');d.dataset.cat=cat;d.textContent=cat;d.onclick=function(){filterCat(cat)};sb.appendChild(d)})}
-function renderGrid(){var items=allChannels.filter(function(c){return c.type===currentTab&&(currentCat==='all'||c.category===currentCat)});var grid=document.getElementById('grid');var empty=document.getElementById('emptyState');if(items.length===0){grid.style.display='none';empty.style.display='flex';document.getElementById('channelCount').textContent='0 items';return}empty.style.display='none';grid.style.display='grid';grid.innerHTML='';document.getElementById('channelCount').textContent=items.length+' items';items.forEach(function(ch){var card=document.createElement('div');card.className='ch-card';card.tabIndex=0;var thumbHtml=ch.logo?'<img src="'+ch.logo+'" onerror="this.outerHTML=\'<span class=fallback>'+ch.name.charAt(0)+'</span>\'">':'<span class="fallback">'+ch.name.charAt(0)+'</span>';card.innerHTML='<div class="thumb">'+thumbHtml+'</div><div class="info"><h4 title="'+ch.name+'">'+ch.name+'</h4><span>'+ch.category+'</span></div>';card.onclick=function(){playChannel(ch)};grid.appendChild(card)})}
-function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===tab)});currentCat='all';renderAll()}
-function filterCat(cat){currentCat=cat;document.querySelectorAll('.cat').forEach(function(c){c.classList.toggle('active',c.dataset.cat===cat)});renderGrid()}
-function playChannel(ch){if(!ch.url)return;var overlay=document.getElementById('playerOverlay');var video=document.getElementById('videoPlayer');document.getElementById('nowTitle').textContent=ch.name;overlay.classList.add('show');if(hls){hls.destroy();hls=null}if(ch.url.indexOf('.m3u8')!==-1&&Hls.isSupported()){hls=new Hls({maxBufferLength:30});hls.loadSource(ch.url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,function(){video.play()})}else if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=ch.url;video.play()}else{video.src=ch.url;video.play()}}
-function stopPlayer(){document.getElementById('playerOverlay').classList.remove('show');document.getElementById('videoPlayer').pause();if(hls){hls.destroy();hls=null}}
-function showAddLocal(){document.getElementById('syncModal').style.display='flex'}
-function closeAddLocal(){document.getElementById('syncModal').style.display='none'}
-async function loadLocalM3u(){var url=document.getElementById('localM3uUrl').value.trim();if(!url)return;closeAddLocal();try{var ch=await parseM3U(url);ch.forEach(function(c){c.category=c.category||'Uncategorized';c.source='Local M3U';c.type='live'});allChannels.push.apply(allChannels,ch);dedup();renderAll();setStatus(true,'Loaded '+ch.length+' channels from local M3U')}catch(e){setStatus(false,'Failed to load M3U')}}
-document.addEventListener('keydown',function(e){if(document.getElementById('playerOverlay').classList.contains('show')){if(e.key==='Escape'||e.key==='Backspace'){stopPlayer();e.preventDefault()}return}if(e.key==='Escape'){closeAddLocal()}});
-if(savedDeviceId&&savedDeviceKey){doSync()}
+document.documentElement.requestFullscreen();
 </script>
 </body>
 </html>

@@ -442,19 +442,55 @@ async function loadLocalM3u() {
   }
 }
 
-// Keyboard / D-pad
+// Auto fullscreen
+function goFullscreen() {
+  var el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
+setTimeout(goFullscreen, 500);
+
+// Keyboard / D-pad for TV remote
 document.addEventListener('keydown', e => {
   if (document.getElementById('playerOverlay').classList.contains('show')) {
-    if (e.key === 'Escape' || e.key === 'Backspace') { stopPlayer(); e.preventDefault(); }
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'Exit') { stopPlayer(); e.preventDefault(); }
     return;
   }
-  if (e.key === 'Escape') { closeAddLocal(); }
+  if (e.key === 'Escape' || e.key === 'Exit') { closeAddLocal(); }
+  // D-pad navigation for channel cards
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    var cards = Array.from(document.querySelectorAll('.ch-card'));
+    var focused = document.activeElement;
+    var idx = cards.indexOf(focused);
+    if (idx >= 0) {
+      e.preventDefault();
+      var next = -1;
+      if (e.key === 'ArrowRight') next = Math.min(idx + 1, cards.length - 1);
+      else if (e.key === 'ArrowLeft') next = Math.max(idx - 1, 0);
+      else if (e.key === 'ArrowDown') next = Math.min(idx + 4, cards.length - 1);
+      else if (e.key === 'ArrowUp') next = Math.max(idx - 4, 0);
+      if (next >= 0 && cards[next]) cards[next].focus();
+    } else if (cards.length > 0) {
+      e.preventDefault();
+      cards[0].focus();
+    }
+  }
+  // OK button on focused card
+  if (e.key === 'Enter' && document.activeElement.classList.contains('ch-card')) {
+    document.activeElement.click();
+  }
 });
 
 // Auto-sync on load if credentials saved
 if (savedDeviceId && savedDeviceKey) {
   doSync();
 }
+
+// Hide URL bar on LG TV
+window.addEventListener('load', function() {
+  setTimeout(function() { window.scrollTo(0, 1); }, 100);
+});
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js').catch(() => {});
