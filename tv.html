@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#05070c">
+<link rel="manifest" href="manifest.json">
+<title>LibertyVue Player</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<style>
+:root{--bg:#05070c;--panel:#0e1623;--card:#131f30;--gold:#f0bd4e;--gold2:#ffe09a;--text:#f8fafc;--muted:#8899b0;--border:#1e2d44;--focus:0 0 0 3px rgba(240,189,79,.45)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+body{display:flex;flex-direction:column}
+
+.topbar{display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(14,22,35,.92);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar .logo{font-weight:900;font-size:18px;letter-spacing:-.5px}.topbar .logo em{font-style:normal;color:var(--gold)}
+.topbar .sep{width:1px;height:24px;background:var(--border)}
+.topbar .clk{color:var(--muted);font-size:13px;margin-left:auto}
+.topbar .conn{display:flex;align-items:center;gap:8px}
+.topbar .conn input{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;width:120px}
+.topbar .conn input:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
+.topbar .conn .btn{background:var(--gold);color:#191508;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.topbar .conn .btn:hover{opacity:.88}
+.topbar .conn .btn.sec{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.topbar .licence-badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700}
+.topbar .licence-badge.active{background:#102c20;color:#57d987}
+.topbar .licence-badge.trial{background:#2c2410;color:var(--gold)}
+.topbar .licence-badge.expired{background:#2c1010;color:#ff7f87}
+
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar .section-label{padding:14px 16px 6px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sidebar .cat{padding:10px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:0;transition:background .15s}
+.sidebar .cat:hover,.sidebar .cat.active{background:rgba(255,255,255,.06);color:var(--text)}
+.sidebar .cat.active{border-left:3px solid var(--gold);padding-left:13px}
+
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;gap:2px;padding:10px 20px;background:rgba(14,22,35,.6);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.tab:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.tab.active{background:var(--gold);color:#191508}
+
+.grid-wrap{flex:1;overflow-y:auto;padding:16px 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.ch-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s}
+.ch-card:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
+.ch-card:hover{transform:translateY(-3px);border-color:rgba(240,189,79,.3)}
+.ch-card .thumb{height:120px;background:linear-gradient(135deg,#162033,#0d1520);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ch-card .thumb img{width:100%;height:100%;object-fit:cover}
+.ch-card .thumb .fallback{font-size:32px;font-weight:900;color:var(--gold);opacity:.5}
+.ch-card .info{padding:10px 12px}
+.ch-card .info h4{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-card .info span{font-size:11px;color:var(--muted)}
+
+.player-overlay{position:fixed;inset:0;background:#000;z-index:100;display:none}
+.player-overlay.show{display:flex;flex-direction:column}
+.player-overlay .player-top{display:flex;align-items:center;gap:12px;padding:14px 24px;background:rgba(0,0,0,.7);position:absolute;top:0;left:0;right:0;z-index:2}
+.player-overlay .player-top .now-title{font-size:16px;font-weight:700;flex:1}
+.player-overlay .player-top .close-btn{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.player-overlay video{width:100%;height:100%;object-fit:contain;background:#000}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:16px}
+.empty-state .icon{font-size:48px;opacity:.4}
+.empty-state p{font-size:15px}
+
+.sync-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center}
+.sync-modal .box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:440px;width:90%}
+.sync-modal h2{font-size:20px;margin-bottom:6px}
+.sync-modal p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px}
+.sync-modal label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;margin-top:12px}
+.sync-modal input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font-size:14px}
+.sync-modal input:focus{outline:none;box-shadow:var(--focus);border-color:var(--gold)}
+.sync-modal .actions{display:flex;gap:10px;margin-top:24px}
+.sync-modal .btn{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px;border:none;cursor:pointer;text-align:center}
+.sync-modal .btn.primary{background:var(--gold);color:#191508}
+.sync-modal .btn.secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+
+.status-bar{display:flex;align-items:center;gap:12px;padding:6px 20px;background:rgba(14,22,35,.8);border-top:1px solid var(--border);font-size:12px;color:var(--muted);flex-shrink:0}
+.status-bar .dot{width:8px;height:8px;border-radius:50%;background:#ff7f87}
+.status-bar .dot.on{background:#57d987}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo"><em>Liberty</em>Vue Player</span>
+  <span class="sep"></span>
+  <div class="conn">
+    <input id="deviceIdIn" placeholder="Device ID" spellcheck="false">
+    <input id="deviceKeyIn" placeholder="Device Key" type="password" spellcheck="false" style="width:100px">
+    <button class="btn" onclick="doSync()">Sync</button>
+    <button class="btn sec" onclick="showAddLocal()">+ Local M3U</button>
+  </div>
+  <span id="licenceBadge" class="licence-badge trial" style="display:none"></span>
+  <span class="clk" id="clock"></span>
+</div>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+    <div class="section-label">Categories</div>
+    <div class="cat active" data-cat="all" onclick="filterCat('all')">All Channels</div>
+  </div>
+  <div class="content">
+    <div class="tabs">
+      <div class="tab active" data-tab="live" onclick="switchTab('live')">Live TV</div>
+      <div class="tab" data-tab="movies" onclick="switchTab('movies')">Movies</div>
+      <div class="tab" data-tab="series" onclick="switchTab('series')">Series</div>
+    </div>
+    <div class="grid-wrap" id="gridWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">📡</div>
+        <p>Connect your device or add a local M3U playlist</p>
+      </div>
+      <div class="grid" id="grid" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span class="dot" id="statusDot"></span>
+  <span id="statusText">Not connected</span>
+  <span id="channelCount" style="margin-left:auto"></span>
+</div>
+
+<div class="player-overlay" id="playerOverlay">
+  <div class="player-top">
+    <span class="now-title" id="nowTitle"></span>
+    <button class="close-btn" onclick="stopPlayer()">✕</button>
+  </div>
+  <video id="videoPlayer" controls autoplay></video>
+</div>
+
+<div class="sync-modal" id="syncModal" style="display:none">
+  <div class="box">
+    <h2>Add Local M3U Playlist</h2>
+    <p>Paste your M3U file URL below to load channels directly in the browser.</p>
+    <label>Playlist URL</label>
+    <input id="localM3uUrl" placeholder="https://example.com/playlist.m3u">
+    <div class="actions">
+      <button class="btn secondary" onclick="closeAddLocal()">Cancel</button>
+      <button class="btn primary" onclick="loadLocalM3u()">Load</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://zioesbhpkkcqfivtqlqt.supabase.co';
+const SB_KEY = 'sb_publishable_cVKOB24p11DwVfQ2uRJOLw_WwIjoyUF';
+
+let allChannels = [];
+let currentTab = 'live';
+let currentCat = 'all';
+let hls = null;
+
+// Clock
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateClock, 10000);
+updateClock();
+
+// Restore saved credentials
+const savedDeviceId = localStorage.getItem('lv_device_id') || '';
+const savedDeviceKey = localStorage.getItem('lv_device_key') || '';
+document.getElementById('deviceIdIn').value = savedDeviceId;
+document.getElementById('deviceKeyIn').value = savedDeviceKey;
+
+async function sbRpc(name, params) {
+  const res = await fetch(`${SB_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${SB_KEY}`
+    },
+    body: JSON.stringify(params)
+  });
+  return res.json();
+}
+
+async function doSync() {
+  const deviceId = document.getElementById('deviceIdIn').value.trim();
+  const deviceKey = document.getElementById('deviceKeyIn').value.trim();
+  if (!deviceId || !deviceKey) return alert('Enter Device ID and Device Key');
+  localStorage.setItem('lv_device_id', deviceId);
+  localStorage.setItem('lv_device_key', deviceKey);
+
+  try {
+    const data = await sbRpc('sync_device', { p_device_id: deviceId, p_device_key: deviceKey });
+    if (data.error) { setStatus(false, 'Sync failed: ' + data.error); return; }
+    setStatus(true, 'Connected');
+    if (data.license) updateLicenceBadge(data.license);
+    if (data.playlists) await loadPlaylists(data.playlists);
+  } catch (e) {
+    setStatus(false, 'Network error');
+  }
+}
+
+function setStatus(on, text) {
+  document.getElementById('statusDot').className = 'dot' + (on ? ' on' : '');
+  document.getElementById('statusText').textContent = text;
+}
+
+function updateLicenceBadge(lic) {
+  const b = document.getElementById('licenceBadge');
+  b.style.display = 'inline-block';
+  b.className = 'licence-badge ' + (lic.status === 'active' ? 'active' : 'trial');
+  if (lic.status === 'active') {
+    b.textContent = lic.type === 'lifetime' ? 'LIFETIME' : lic.daysRemaining ? `${lic.daysRemaining}d left` : 'ACTIVE';
+  } else {
+    b.textContent = lic.daysRemaining ? `${lic.daysRemaining}d trial` : 'TRIAL';
+  }
+}
+
+async function loadPlaylists(playlists) {
+  allChannels = [];
+  for (const pl of playlists) {
+    try {
+      if (pl.type === 'M3U' || pl.type === 'm3u') {
+        const channels = await parseM3U(pl.url);
+        channels.forEach(c => { c.category = c.category || 'Uncategorized'; c.source = pl.name; });
+        allChannels.push(...channels);
+      } else if (pl.type === 'XTREAM' || pl.type === 'xtream') {
+        const channels = await loadXtream(pl.url || pl.server, pl.username, pl.password);
+        allChannels.push(...channels);
+      }
+    } catch (e) { console.warn('Playlist load error', pl.name, e); }
+  }
+  dedup();
+  renderAll();
+}
+
+async function parseM3U(url) {
+  const res = await fetch(url);
+  const text = await res.text();
+  const lines = text.split('\n');
+  const channels = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('#EXTINF:')) {
+      const nameMatch = line.match(/,(.+)$/);
+      const name = nameMatch ? nameMatch[1].trim() : 'Unknown';
+      const logoMatch = line.match(/tvg-logo="([^"]*)"/i);
+      const logo = logoMatch ? logoMatch[1] : '';
+      const catMatch = line.match(/group-title="([^"]*)"/i);
+      const category = catMatch ? catMatch[1] : 'Uncategorized';
+      let streamUrl = '';
+      if (i + 1 < lines.length && !lines[i + 1].trim().startsWith('#')) {
+        streamUrl = lines[i + 1].trim();
+      }
+      if (streamUrl) channels.push({ name, logo, category, url: streamUrl, type: 'live' });
+    }
+  }
+  return channels;
+}
+
+async function loadXtream(server, user, pass) {
+  if (!server) return [];
+  const base = server.replace(/\/$/, '');
+  const liveUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_categories`;
+  const movieUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_vod_categories`;
+  const seriesUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_series_categories`;
+
+  let liveChannels = [], movieChannels = [], seriesChannels = [];
+
+  try {
+    const [liveRes, movieRes, seriesRes] = await Promise.all([
+      fetch(liveUrl).then(r => r.json()).catch(() => []),
+      fetch(movieUrl).then(r => r.json()).catch(() => []),
+      fetch(seriesUrl).then(r => r.json()).catch(() => [])
+    ]);
+
+    for (const cat of (liveRes || [])) {
+      const streamsUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_streams&category_id=${cat.category_id}`;
+      const streams = await fetch(streamsUrl).then(r => r.json()).catch(() => []);
+      for (const s of (streams || [])) {
+        const streamUrl = `${base}/live/${user}/${pass}/${s.stream_id}.m3u8`;
+        liveChannels.push({ name: s.name, logo: s.stream_icon || '', category: cat.category_name || 'Live', url: streamUrl, type: 'live' });
+      }
+    }
+
+    for (const cat of (movieRes || [])) {
+      const streamsUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_vod_streams&category_id=${cat.category_id}`;
+      const streams = await fetch(streamsUrl).then(r => r.json()).catch(() => []);
+      for (const s of (streams || [])) {
+        const streamUrl = `${base}/movie/${user}/${pass}/${s.stream_id}.${s.container_extension || 'mp4'}`;
+        movieChannels.push({ name: s.name, logo: s.stream_icon || '', category: cat.category_name || 'Movies', url: streamUrl, type: 'movie' });
+      }
+    }
+
+    for (const cat of (seriesRes || [])) {
+      const seriesListUrl = `${base}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_series&category_id=${cat.category_id}`;
+      const seriesList = await fetch(seriesListUrl).then(r => r.json()).catch(() => []);
+      for (const s of (seriesList || [])) {
+        if (s.series_id && s.cover) {
+          seriesChannels.push({ name: s.name, logo: s.cover || '', category: cat.category_name || 'Series', url: '', type: 'series', seriesId: s.series_id });
+        }
+      }
+    }
+  } catch (e) { console.warn('Xtream error', e); }
+
+  return [...liveChannels, ...movieChannels, ...seriesChannels];
+}
+
+function dedup() {
+  const seen = new Set();
+  allChannels = allChannels.filter(c => {
+    const key = c.url || c.name;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderAll() {
+  renderGrid();
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const cats = new Set(allChannels.filter(c => c.type === currentTab).map(c => c.category));
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '<div class="section-label">Categories</div>';
+  const allBtn = document.createElement('div');
+  allBtn.className = 'cat' + (currentCat === 'all' ? ' active' : '');
+  allBtn.dataset.cat = 'all';
+  allBtn.textContent = `All ${currentTab === 'live' ? 'Channels' : currentTab === 'movies' ? 'Movies' : 'Series'}`;
+  allBtn.onclick = () => filterCat('all');
+  sidebar.appendChild(allBtn);
+
+  [...cats].sort().forEach(cat => {
+    const d = document.createElement('div');
+    d.className = 'cat' + (currentCat === cat ? ' active' : '');
+    d.dataset.cat = cat;
+    d.textContent = cat;
+    d.onclick = () => filterCat(cat);
+    sidebar.appendChild(d);
+  });
+}
+
+function renderGrid() {
+  const items = allChannels.filter(c => c.type === currentTab && (currentCat === 'all' || c.category === currentCat));
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('emptyState');
+
+  if (items.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = 'flex';
+    document.getElementById('channelCount').textContent = '0 items';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+  document.getElementById('channelCount').textContent = `${items.length} items`;
+
+  items.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'ch-card';
+    card.tabIndex = 0;
+    card.innerHTML = `
+      <div class="thumb">
+        ${ch.logo ? `<img src="${ch.logo}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'fallback',textContent:'${ch.name.charAt(0)}'}))">` : `<span class="fallback">${ch.name.charAt(0)}</span>`}
+      </div>
+      <div class="info">
+        <h4 title="${ch.name}">${ch.name}</h4>
+        <span>${ch.category}</span>
+      </div>
+    `;
+    card.onclick = () => playChannel(ch);
+    card.onkeydown = (e) => { if (e.key === 'Enter') playChannel(ch); };
+    grid.appendChild(card);
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  currentCat = 'all';
+  renderAll();
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+  renderGrid();
+}
+
+function playChannel(ch) {
+  if (!ch.url) return;
+  const overlay = document.getElementById('playerOverlay');
+  const video = document.getElementById('videoPlayer');
+  document.getElementById('nowTitle').textContent = ch.name;
+  overlay.classList.add('show');
+
+  if (hls) { hls.destroy(); hls = null; }
+
+  if (ch.url.includes('.m3u8') && Hls.isSupported()) {
+    hls = new Hls({ maxBufferLength: 30 });
+    hls.loadSource(ch.url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = ch.url;
+    video.play();
+  } else {
+    video.src = ch.url;
+    video.play();
+  }
+}
+
+function stopPlayer() {
+  const overlay = document.getElementById('playerOverlay');
+  const video = document.getElementById('videoPlayer');
+  overlay.classList.remove('show');
+  video.pause();
+  if (hls) { hls.destroy(); hls = null; }
+}
+
+// Local M3U
+function showAddLocal() { document.getElementById('syncModal').style.display = 'flex'; }
+function closeAddLocal() { document.getElementById('syncModal').style.display = 'none'; }
+
+async function loadLocalM3u() {
+  const url = document.getElementById('localM3uUrl').value.trim();
+  if (!url) return;
+  closeAddLocal();
+  try {
+    const channels = await parseM3U(url);
+    channels.forEach(c => { c.category = c.category || 'Uncategorized'; c.source = 'Local M3U'; c.type = 'live'; });
+    allChannels.push(...channels);
+    dedup();
+    renderAll();
+    setStatus(true, `Loaded ${channels.length} channels from local M3U`);
+  } catch (e) {
+    setStatus(false, 'Failed to load M3U');
+  }
+}
+
+// Keyboard / D-pad
+document.addEventListener('keydown', e => {
+  if (document.getElementById('playerOverlay').classList.contains('show')) {
+    if (e.key === 'Escape' || e.key === 'Backspace') { stopPlayer(); e.preventDefault(); }
+    return;
+  }
+  if (e.key === 'Escape') { closeAddLocal(); }
+});
+
+// Auto-sync on load if credentials saved
+if (savedDeviceId && savedDeviceKey) {
+  doSync();
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+}
+</script>
+</body>
+</html>

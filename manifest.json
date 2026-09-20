@@ -1,0 +1,15 @@
+{
+  "name": "LibertyVue Player",
+  "short_name": "LV Player",
+  "description": "IPTV Player — Live TV, Films, Series & Radio",
+  "start_url": "/tv.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05070c",
+  "theme_color": "#f0bd4e",
+  "categories": ["entertainment", "video"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
